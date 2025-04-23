@@ -1,0 +1,7 @@
+---
+title: "Logfile_ivar"
+output: html_document
+date: "2025-04-23"
+---
+
+ivar
