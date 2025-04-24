@@ -1,0 +1,135 @@
+---
+title: "Logboek Mirte"
+author: "Mirte Draaijer"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+lang: "en"
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Loading libraries:
+
+```{r}
+library("readxl")
+```
+
+
+# Introduction:
+
+In this log I will work on a multi-omics project for a school subject called "Omics". During this project I am working in a group with Ivar, Jasper, and Kasthury. In this log I will only describe the steps I took during the project, but I will reference their logs where necessary. 
+The data we will be using can be downloaded through the following links:
+
+- [RNA sequencing](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE271272)
+- [Proteomics](https://www.ebi.ac.uk/pride/archive/projects/PXD053766)
+
+The corresponding article can be found [here](https://www.nature.com/articles/s41536-025-00404-3).
+
+The question we want to answer during this project is: HIER EEN ONDERZOEKSVRAAG?
+
+# Gathering information:
+
+## Reading the article:
+
+**23-4-2025 & 24-4-2025:**
+
+For this project we will be using data from the article "Fibroblast-derived osteoglycin promotes epithelial cell repair", as a first step in this project I will read through the article and shortly summarize / make notes about the important parts.
+
+**Summary / article notes:**
+
+<span style="text-decoration:underline">**Introduction:**</span>
+In this study the researchers aimed to identify factors in the lung fibroblast secretome with regenaritve potential for therapeutic development. They did this using a proteomics-guided drug discovery strategy.
+
+<span style="text-decoration:underline">**Results:**</span>
+The following quotes sumarize the results:
+
+- "The CFE was significantly increased by treating cultures with EVs (109 particles/mL, 50,000 particles per cell) or SFs (30µg/mL) (Fig. 1a–c), without affecting organoid size (Fig. 1d). In addition, EV- or SF-treatment increased organoid formation in a concentration-dependent manner (Fig. S2a–d). Interestingly, reducing the number of fibroblasts yielded significantly fewer murine organoids, underscoring the supportive function of fibroblasts in epithelial organoid formation (Fig. S2e–f)."
+- "In summary, the proteomic analysis collectively demonstrates an enrichment of EV-associated proteins in EVs when compared to SFs."
+- "In total, we identified twelve factors for evaluation in lung organoids: seven factors within the SF-protein group and five factors present in both sample types (Fig. 2a, b, Supplementary Data 3)."
+- "This suggests that fibroblasts, known to secrete important components of the extracellular matrix, such as collagens, are a likely endogenous source for OGN."
+- "This suggests that while the overall area of OGN-positive tissue may be reduced, the remaining cells within these regions exhibit stronger OGN expression, potentially reflecting an active repair response in surviving cells27. Taken together, these data suggest that OGN expression is mainly affected by current smoking."
+- "Taken together, these data demonstrate the profound potential of OGN on the human and mouse alveolar epithelium, positioning it as a promising therapeutic candidate supporting alveolar epithelial repair."
+- "Overall, EVs, SFs, and OGN had the most pronounced transcriptomic effect in fibroblasts compared to epithelial cells."
+- "Together, these findings suggest enhanced epithelial-fibroblast crosstalk mediated by growth factors upon OGN treatment, potentially contributing to the increased organoid formation."
+- "In summary, these results indicate that a smaller active fragment of OGN is sufficient to support alveolar epithelial progenitor behavior."
+- "Taken together, the active fragment of OGN ameliorates elastase-induced lung injury in PCLS and improves lung function in mice, thereby underscoring its potential as a promising therapeutic approach."
+
+These quotes will make it easier to look up certain results when I need to know more about them.
+
+<span style="text-decoration:underline">**Discussion:**</span>
+The discussion talks about how to interpret the results, besides this it describes limitation of the study as well. The most important limitations in the study are:
+
+- Relatively  small number of patients.
+- The use of human lung fibroblast-derived EVs and SFs in a murine organoid system.
+
+<span style="text-decoration:underline">**Methods:**</span>
+For our project the bio-informatics methods are most interesting, so I will only make notes one these. If needed I will summarize the other methods later on as well.
+
+<span style="text-decoration:underline">Bulk RNA sequencing analysis:</span>
+
+- Total RNA was extracted from cells resorted from organoids using the NucleoSpin RNA isolation kit according to the manufacturer's instructions.
+- Bulk RNA sequencing on resorted Epcam+ and fibroblasts from organoids was performed by GenomeSCan using an Illumina NovaSeq 6000 sequencer. 
+- FastQC v0.34 and FastQA were used to preform quality control.
+- Trimmomatic v0.30 was used to remove adapter sequences from the reads.
+- The reads were aligned against the ensemble mouse reference GRCm38.
+- Principal component analyses were preformed in R using DESeq2.
+- Differentially expressed genes between control and treated samples were found using DESeq2.
+- Kyoto encyclopedia of genes and genomes was used as reference database.
+
+<span style="text-decoration:underline">Proteomic analysis:</span>
+
+- Liquid chromatography-tandem mass spectrometry data was processed with Spectronaut using the standard settings of the directDIA workflow with a human SwissProt database.
+- For quantification local normalization was applied, and Q-value filtering was adjusted to the classical setting without imputing.
+
+<span style="text-decoration:underline">Statistical analysis:</span>
+
+- Results are shown as mean ± standard error, with sample size and repeats in figure legends.
+- Four normality tests (D'Agostino-Pearson, Anderson-Darling, Shapiro-Wilk, Kolmogorov-Smirnov) were conducted.
+- One-way ANOVA tests were applied
+- Unpaired/paired two-tailed Student's t test or Mann-Whitney and Wilcoxon tests were applied for two group comparisons.
+- Analyses were done in GraphPad Prism 10 and RNA sequencing analysis in R Studio.
+
+## Literature assignment:
+
+**23-4-2025:**
+
+For this subject we have a literature assignment, we have to look up 2 research articles related to our project and summarize them. I will document this in my log as well, so that I have a nice overview of all my information. We will look up articles on the following things:
+
+- COPD: Jasper will look up 2 research articles about COPD, this is the example the researchers used in the article that we're using for our project.
+- Epithelial cell repair: Ivar will look up 2 research articles about epithelial cell repair.
+- Multi-omics analysis: I will look up 2 articles about multi-omics analysis, we can use the summary of these articles as a guideline for our own project.
+- Proteomics: Kasthury will look up 2 articles about proteomics, we have never worked with proteomics before. Having some more background information on this subject will come in useful. 
+
+**24-4-2025:**
+
+Today I will start looking up some potential articles about multi-omics analysis. These are titles of the potential articles I have found:
+
+- "OMICtools: an informative directory for multi-omic data analysis"
+- "Multi-omics approaches to disease"
+
+I will tell my group that I have found 2 articles for my part of this assignment and aks them if I can continue or if they need to check the articles first.
+
+# Exploratory data analysis:
+
+The first step in the exploratory data analysis is loading the data.
+
+```{r}
+proteomics_data <- read_excel(
+  "omic_epithelial_cell_repair/data/2021-36_2021-42_SN16withHELAlib_MS2Quant_Qclassic_LocalNorm_NoImp.xlsx")
+
+rna_seq_data <- read.csv(
+  "omic_epithelial_cell_repair/data/GSE271272_rawcounts.csv")
+```
+
+# Comfirmatory data analysis
