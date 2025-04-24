@@ -122,6 +122,8 @@ I will tell my group that I have found 2 articles for my part of this assignment
 
 # Exploratory data analysis:
 
+## Data loading and first look:
+
 The first step in the exploratory data analysis is loading the data.
 
 ```{r}
@@ -131,5 +133,36 @@ proteomics_data <- read_excel(
 rna_seq_data <- read.csv(
   "omic_epithelial_cell_repair/data/GSE271272_rawcounts.csv")
 ```
+
+Now I will take a look at the first few lines of both files, starting with the proteomics data.
+
+```{r}
+head(proteomics_data)
+```
+
+When taking a look at the first few lines of the proteomics data I'm seeing the following things:
+
+- The first column is called ```PG.ProteinGroups```this column contains one or more protein groups.
+- The second column is called ```PG.Genes``` the first row of this column contains the word ```COUNT```, when looking at the other number it shows a number. I'm assuming that this is a count, I'm not yet sure what this count means. After the first row this column contains one or more genes.
+- The next columns have a name consisting of what seems to be a year, either the number 36 or 42, SF or EV followed by the number 1, 2, or 3. When taking a look at the article I found that SF stand for soluble factors and EV stands for extracellular vesicles. I'm not sure what the numbers 36 and 42 mean, I can't find anything about this. I think the numbers 1, 2, and 3 stand for duplicates.
+
+Now I will take a look at the first few lines of the RNA sequencing data file.
+
+```{r}
+head(rna_seq_data)
+```
+
+When taking a look at the first few lines of the RNA sequencing data I'm seeing the following things:
+
+- The first column is called ```Sample```, I looked up the first few lines of this row and discovered that these are genes.
+- The following columns are named in the following way: starting with M1, M2, or M3. Followed by ctrl, EVs, SFs, or OGN. Followed by Epcam or CCL. When taking a  look at the article I found that SF stand for soluble factors, EV stands for extracellular vesicles, OGN stands for osteoglycin. I think M1, M2, and M3 indicate the duplicates. I think Epcam and CCL indicate which cell type was used.
+- Each column except the first contains a number, I think this number is a count representing how many reads of the gene were found in the sample.
+
+
+Now that I've looked at the first few lines it's important to compare the two files because we want to do analysis with both the files.
+
+When looking at both the files it is hard to see which line in the proteomics data belongs to which line in the RNA sequencing data, because the samples do not have the same name. Another problem is the fact that the RNA sequencing data seems to have more samples. This is a problem, I think we need to discuss with our teachers.
+
+I will try to see if anything in the gene columns of both the files match up. 
 
 # Comfirmatory data analysis
