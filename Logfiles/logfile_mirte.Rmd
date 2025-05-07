@@ -115,10 +115,22 @@ For this subject we have a literature assignment, we have to look up 2 research 
 
 Today I will start looking up some potential articles about multi-omics analysis. These are titles of the potential articles I have found:
 
-- "OMICtools: an informative directory for multi-omic data analysis"
+- "Bioinformatics Databases and Tools for Analysis of Multi-omics"
 - "Multi-omics approaches to disease"
 
-I will tell my group that I have found 2 articles for my part of this assignment and aks them if I can continue or if they need to check the articles first.
+I will tell my group that I have found 2 articles for my part of this assignment and aks them if I can continue or if they need to check the articles first. I checked with my teammates and they think the articles I found are good, so I will be using these for the literature assignment.
+
+### Bioinformatics Databases and Tools for Analysis of Multi-omics:
+
+**24-4-2025 & 29-4-2025:**
+
+On these days I worked on summarizing this article for the literature assignment.
+
+### Multi-omics approaches to diseases:
+
+**24-4-2025 & 6-5-2025:**
+
+On these days I worked on summarizing this article for the literature assignment.
 
 # Exploratory data analysis:
 
