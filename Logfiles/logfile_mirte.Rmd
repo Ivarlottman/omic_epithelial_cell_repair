@@ -132,6 +132,43 @@ On these days I worked on summarizing this article for the literature assignment
 
 On these days I worked on summarizing this article for the literature assignment.
 
+## Guest lecture:
+
+**8-2-2025:**
+
+Today we had a guest lecture from Karin Wolters.
+
+She is one of the researchers that worked on the project we chose. So we had the opportunity to ask her some questions.
+
+Our most important question was about the data, we could not really make up which samples from the files match up. This makes it hard to compare the results when we are going to start the data analysis. Karin said that she will ask a colleague about this, and that our teachers will get back to us with the information needed.
+
+# Research question:
+
+**8-5-2025:**
+
+As a group we decided that everyone will think of a research question for this project, we settled on a deadline of next monday. 
+
+**11-5-2025:**
+
+The research question I came up with is the following __What genes and proteins are differentially expressed in the control- and researchgroups in the dataset?__ since we need to write the article in Dutch I translated it as well: __Welke genen en eiwitten zijn differentieel tot expressie gebracht tussen de controle- en onderzoeksgroepen in de dataset?__
+
+I also thought about which tools we can use to answer the research question I came up with. This is what I have so far:
+
+- DESeq2 for the differential gene expression analysis, we have used this tool before which will make it an easy choice for this portion of the project.
+- For the differential protein expression there are multiple tools/libraries available some examples are: limma, MSstats, DEP, and prolfqua.
+- We can visualize the results as venn-diagrams and vulcano plots.
+- Furthermore we could take a look at KEGG pathways to see if there are any pathways that stand out.
+
+**12-5-2025:**
+
+Today we discussed which research question we will use for this project. Ofcourse this is something that can change later on but for now we settled on: __deze onderzoeksvraag__
+
+# Project approach:
+
+**12-5-2025:**
+
+Now that we have settled on a research question, it is important to discuss our approach for this project. What steps will we take? How will we preform these steps? Who will preform them? Below is a small overview of our initial approach.
+
 # Exploratory data analysis:
 
 ## Data loading and first look:
