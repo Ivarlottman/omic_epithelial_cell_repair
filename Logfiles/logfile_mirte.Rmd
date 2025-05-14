@@ -23,6 +23,8 @@ Loading libraries:
 
 ```{r}
 library("readxl")
+library("DESeq2")
+library("S4Vectors")
 ```
 
 
@@ -142,6 +144,14 @@ She is one of the researchers that worked on the project we chose. So we had the
 
 Our most important question was about the data, we could not really make up which samples from the files match up. This makes it hard to compare the results when we are going to start the data analysis. Karin said that she will ask a colleague about this, and that our teachers will get back to us with the information needed.
 
+# Problem with the data:
+
+**13-5-2025 & 14-5-2025:**
+
+Previously I described that we had a guest lecture from Karin Wolters, we asked her some questions about our data. Today we got a response from Karin. 
+
+The EVs used for the transcriptomics dataset and the EVs used for the proteomics dataset come from completely different batches. This is a problem because this way we can not compare the two. For now our plan is to discuss with our teacher what to do next, because with these datasets we can not preform a multi-omics project. Most likely we will have to use a different dataset or change our entire project.
+
 # Research question:
 
 **8-5-2025:**
@@ -161,7 +171,7 @@ I also thought about which tools we can use to answer the research question I ca
 
 **12-5-2025:**
 
-Today we discussed which research question we will use for this project. Ofcourse this is something that can change later on but for now we settled on: __deze onderzoeksvraag__
+Today we discussed which research question we will use for this project. Ofcourse this is something that can change later on but for now we settled on: __Are there any pathways that changed in the COPD researchgroup in comparison to  the control group?__ and in Dutch: __Zijn er pathways veranderd in de COPD onderzoeksgroep ten opzichte van de controlegroep?__ 
 
 # Project approach:
 
@@ -169,9 +179,200 @@ Today we discussed which research question we will use for this project. Ofcours
 
 Now that we have settled on a research question, it is important to discuss our approach for this project. What steps will we take? How will we preform these steps? Who will preform them? Below is a small overview of our initial approach.
 
+| Task                             | Person   |
+|----------------------------------|----------|
+| DESeq                            | Mirte    |
+| DESeq alternative proteomics     | Ivar     |
+| Vulcano plot transcriptomics     | Mirte    |
+| Vulcano plot proteomics          | Ivar     |
+| Pathway analysis transcriptomics | Jasper   |
+| Pathway analysis proteomics      | Kasthury |
+
+This will be our initial approach for the project, ofcourse if we run into new insights or problems (hopefully not) we will change the approach. But for now this is how we will start. 
+
+# DESeq:
+
+**12-5-2025:**
+
+During a meeting with my group we discussed that I will work on DESeq for differential gene expression. Karin still needs to get back to us about which sample is which. But I can start on writing code for implementing DESeq and I can test on data I still have from an old project. 
+
+## Background info:
+
+**12-5-2025:**
+
+DESeq2 is used for detecting differentially expressed genes from count data.  The package DESeq2 provides methods to test for differential expression by use of negative binomial generalized linear models. 
+
+BRON nog goed zetten: https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html
+
+## Implementing:
+
+**12-5-2025:**
+
+Karin still needs to get back to us on which sample is which, for now I will implement DESeq to use all samples, but I can change this later on if we're not going to use all samples. If I have working code changing it to use the correct groups will be easy.
+
+### Step 1 loading the data:
+
+```{r}
+rna_seq_data <- read.csv(
+  "omic_epithelial_cell_repair/data/GSE271272_rawcounts.csv")
+
+head(rna_seq_data)
+```
+
+When taking a look at the first few lines of the RNA sequencing data I'm seeing the following things:
+
+- The first column is called ```Sample```, I looked up the first few lines of this row and discovered that these are genes.
+- The following columns are named in the following way: starting with M1, M2, or M3. Followed by ctrl, EVs, SFs, or OGN. Followed by Epcam or CCL. When taking a  look at the article I found that SF stand for soluble factors, EV stands for extracellular vesicles, OGN stands for osteoglycin. I think M1, M2, and M3 indicate the duplicates. I think Epcam and CCL indicate which cell type was used.
+- Each column except the first contains a number, I think this number is a count representing how many reads of the gene were found in the sample.
+
+### Step 2 constructing DESeq dataset:
+
+To construct the DESeq dataset, the original data needs to be reconstructed. 
+
+```{r}
+cts <- data.frame(rna_seq_data[,-1])
+colnames(cts) <- colnames(rna_seq_data)[-1]
+row.names(cts) <- rna_seq_data$Sample
+cts <- as.matrix(cts)
+```
+
+After preforming this step I can see that it went well. Now it is time to construct a metadata dataframe. This metadata dataframe contains the sample name, group, and cell type.
+
+```{r}
+sample_names <- c("M1_ctrl_Epcam", "M2_ctrl_Epcam", "M3_ctrl_Epcam", "M4_ctrl_Epcam",
+            "M1_EVs_Epcam", "M2_EVs_Epcam", "M3_EVs_Epcam", "M4_EVs_Epcam",
+            "M1_SFs_Epcam", "M2_SFs_Epcam", "M3_SFs_Epcam", "M4_SFs_Epcam",
+            "M1_OGN_Epcam", "M2_OGN_Epcam", "M3_OGN_Epcam", "M4_OGN_Epcam",
+            "M1_ctrl_CCL", "M2_ctrl_CCL", "M3_ctrl_CCL", "M4_ctrl_CCL",
+            "M1_EVs_CCL", "M2_EVs_CCL", "M3_EVs_CCL", "M4_EVs_CCL",
+            "M1_SFs_CCL", "M2_SFs_CCL", "M3_SFs_CCL", "M4_SFs_CCL",
+            "M1_OGN_CCL", "M2_OGN_CCL", "M3_OGN_CCL", "M4_OGN_CCL")
+
+group <- rep(c("control", "extracellular_vesicles", "soluble_factors", "osteoglycin"), each = 4, times = 2)
+type <- rep(c("epcam", "ccl"), each = 16)
+
+metadata <- data.frame(group = factor(group), type = type)
+rownames(metadata) <- sample_names
+
+head(metadata)
+```
+
+Looking at the metadata dataframe, I can see that the creation of this dataframe went well. Now it is time to construct the DESeqdataset (dds).
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = cts,
+                              colData = metadata,
+                              design = ~ group)
+```
+
+**13-5-2025:**
+
+Today I wanted to continue working on DESeq, I reran all of my code chunks but I ran into a problem with the one above. I keep getting the error/warning:
+```
+Warning: some variables in design formula are characters, converting to factorsError in validObject(.Object) :
+  invalid class “DESeqDataSet” object: superclass "ExpData" not defined in the environment of the object's class
+```
+This is a problem because now I can not continue, I googled the error but can't find much information. I asked my teacher for help but he does not have any experience with DESeq, so he contacted another teacher. Hopefully the other teacher can help me.
+
+The other teacher said it might be a problem with DESeq, so he suggested to try it on the R studio server. I tried running the code on our R studio server and this fixed the problem. So for now I will continue working on the server.
+
+**14-5-2025:**
+
+Today I deleted my installation of DESeq2 and reinstalled it, this suggestion was made by the teacher who helped me sort of fix the issue with DESeq2. Deleting and reinstalling DESeq2 made it work again.
+
+### Step 3 generating summary:
+
+As a first step to analyse the data I will create a summary for each group combination:
+
+- Control vs extracellular vesicles
+- Control vs soluble factors
+- Extracellular vesicles vs soluble factors
+
+```{r}
+dds <- DESeq(dds)
+control_vs_extracellular <- results(dds, contrast = c("group", "control", "extracellular_vesicles"))
+control_vs_soluble <- results(dds, contrast = c("group", "control", "soluble_factors"))
+extracellular_vs_soluble <- results(dds, contrast = c("group", "extracellular_vesicles", "soluble_factors"))
+```
+
+```{r}
+summary(control_vs_extracellular)
+```
+When looking at the results of the summary control vs extracellular the following things stand out:
+
+- 13 genes are upregulated.
+- 72 genes are downregulated.
+- There are 5041 low counts.
+
+
+```{r}
+summary(control_vs_soluble)
+```
+
+When looking at the results of the summary control vs soluble the following things stand out:
+
+- 0 genes are upregulated.
+- 3 genes are downregulated.
+
+```{r}
+summary(extracellular_vs_soluble)
+```
+
+When looking at the results of the summary extracellular vs soluble the following things stand out:
+
+- 88 genes are upregulated.
+- 17 genes are downregulated.
+- There are 5728 low counts.
+
+Over all it stands out that there is quite a big portion of low counts varying from 43% (control vs extracellular) to 48% (extracellular vs soluble).
+
+### Step 4 PCA:
+
+**14-5-2025:**
+
+After creating the summaries I can preform PCA and create plots of it. First I will preform PCA based on cell type (CCL and epcam)
+
+```{r, message = FALSE}
+vsd <- vst(dds, blind=FALSE)
+plotPCA(vsd, intgroup = "type")
+```
+
+Looking at the output of the PCA I can clearly see that the groups cluster. The epcam cells are all the way at the left and the CCL cells are all the way to the right. Since the samples are from different cell types this is not a suprise. 
+
+Now I will preform a PCA based on group (control, extracellular vesicles, osteoglycin, and soluble factors).
+ 
+```{r, message = FALSE}
+plotPCA(vsd, intgroup="group")
+```
+When looking at the output of the PCA I can clearly see that approximately half of the samples are clustered on the left and the other half are clustered on the right, this can be explained by the cell types like I discussed in the previous PCA. Furthermore I can see that the groups cluster slightly, osteoglycin is further away from the other groups and the control group is further away as well. Separating the extracellular vesicles and the soluble factors is hard because they're located in approximately the same spot on the plot.
+
+# DESeq proteomics:
+
+# Vulcano plots:
+
+## Transcriptomics:
+
+## Proteomics:
+
+# Pathway analysis:
+
+## Transcriptomics:
+
+## Proteomics:
+
+
+
+
+
+
+
+**EVEN KIJKEN HOE IK DIT DEEL IN MIJN LOGBOEK WIL DOEN!!!**
+
 # Exploratory data analysis:
 
 ## Data loading and first look:
+
+**24-4-2025:**
 
 The first step in the exploratory data analysis is loading the data.
 
@@ -211,7 +412,5 @@ When taking a look at the first few lines of the RNA sequencing data I'm seeing 
 Now that I've looked at the first few lines it's important to compare the two files because we want to do analysis with both the files.
 
 When looking at both the files it is hard to see which line in the proteomics data belongs to which line in the RNA sequencing data, because the samples do not have the same name. Another problem is the fact that the RNA sequencing data seems to have more samples. This is a problem, I think we need to discuss with our teachers.
-
-I will try to see if anything in the gene columns of both the files match up. 
 
 # Comfirmatory data analysis
