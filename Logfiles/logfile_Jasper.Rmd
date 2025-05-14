@@ -1,0 +1,150 @@
+---
+title: "Logbook_Jasper"
+author: "Jasper Jonker"
+date: "2025-04-23"
+output: html_document
+---
+For our school project were are gone do an research like 
+(Fibroblast-derived osteoglycin promotes epithelial cell repair)[https://pmc.ncbi.nlm.nih.gov/articles/PMC11937367/].
+They are very specific and we are gone a look more global. I will look at the pathway analysis of the transcription.
+
+For this i will use fgsea that is an tool that can be used for this kind of analysis.
+
+
+First we are going to install it. That do we as follow:
+```{r}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("fgsea")
+```
+
+After this we read the library in:
+```{r}
+library(fgsea)
+```
+
+After this i am going to use the example data to look how it all works. 
+
+# oefen
+
+```{r}
+data(examplePathways)
+data(exampleRanks)
+```
+
+```{r}
+fgseaRes <- fgsea(pathways = examplePathways, 
+                  stats    = exampleRanks,
+                  minSize  = 15,
+                  maxSize  = 500)
+fgseaRes
+```
+
+```{r}
+fgseaRes <- fgsea(pathways = examplePathways, 
+                  stats    = exampleRanks,
+                  eps      = 0.0,
+                  minSize  = 15,
+                  maxSize  = 500)
+
+head(fgseaRes[order(pval), ])
+```
+```{r}
+library(data.table)
+library(fgsea)
+library(ggplot2)
+```
+
+```{r}
+plotEnrichment(examplePathways[["5990980_Cell_Cycle"]],
+               exampleRanks) + labs(title="Programmed Cell Death")
+
+```
+```{r}
+topPathwaysUp <- fgseaRes[ES > 0][head(order(pval), n=1), pathway]
+topPathwaysDown <- fgseaRes[ES < 0][head(order(pval), n=1), pathway]
+topPathways <- c(topPathwaysUp, rev(topPathwaysDown))
+plotGseaTable(examplePathways[topPathways], exampleRanks, fgseaRes, 
+              gseaParam=0.5)
+```
+## Over-Representation Analysis
+
+```{r}
+library(clusterProfiler)
+data("gcSample") # data for examples
+
+```
+
+```{r}
+# Need to remove duplicates for the examples
+all_genes <- unlist(gcSample)
+universe <- all_genes[Biobase::isUnique(all_genes)] # all unique genes
+
+# List with only unique genes
+gcUnique <- lapply(gcSample, function(group_i) {
+  group_i[group_i %in% universe]
+})
+```
+
+
+```{r}
+# MSigDB R package
+library(msigdbr)
+msigdbr::msigdbr_collections() # available collections
+# Subset to Human GO-BP sets
+BP_db <- msigdbr(species = "Homo sapiens", 
+                 category = "C5", subcategory = "GO:BP")
+head(BP_db)
+```
+
+```{r}
+# Convert to a list of gene sets
+BP_conv <- unique(BP_db[, c("entrez_gene", "gs_exact_source")])
+BP_list <- split(x = BP_conv$entrez_gene, f = BP_conv$gs_exact_source)
+# First ~6 IDs of first 3 terms
+lapply(head(BP_list, 3), head)
+```
+
+```{r}
+## Cluster GO-BP ORA with fgsea package
+library(fgsea)
+library(dplyr)
+
+# For each cluster i, perform ORA
+fgsea_ora <- lapply(seq_along(gcUnique), function(i) {
+  fora(pathways = BP_list, 
+       genes = gcUnique[[i]], # genes in cluster i
+       universe = universe, # all genes
+       minSize = 15, 
+       maxSize = 500) %>% 
+    mutate(cluster = names(gcUnique)[i]) # add cluster column
+}) %>% 
+  data.table::rbindlist() %>% # combine tables
+  filter(padj < 0.05) %>% 
+  arrange(cluster, padj) %>% 
+  # Add additional columns from BP_db
+  left_join(distinct(BP_db, gs_subcat, gs_exact_source, 
+                     gs_name, gs_description),
+            by = c("pathway" = "gs_exact_source")) %>% 
+  # Reformat descriptions
+  mutate(gs_name = sub("^GOBP_", "", gs_name),
+         gs_name = gsub("_", " ", gs_name))
+
+# First 6 rows
+head(fgsea_ora)
+```
+
+```{r}
+data <- read.csv("../data/GSE271272_rawcounts.csv")
+head(data)
+```
+```{r}
+library(ggplot2)
+library(factoextra)
+```
+
+```{r}
+t_data = t(data)
+```
+
