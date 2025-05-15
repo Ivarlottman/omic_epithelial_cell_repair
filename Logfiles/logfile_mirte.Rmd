@@ -19,9 +19,9 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Loading libraries:
 
-```{r}
+```{r, include = FALSE}
+#Loading libraries:
 library("readxl")
 library("DESeq2")
 library("S4Vectors")
@@ -39,7 +39,7 @@ The data we will be using can be downloaded through the following links:
 
 The corresponding article can be found [here](https://www.nature.com/articles/s41536-025-00404-3).
 
-The question we want to answer during this project is: HIER EEN ONDERZOEKSVRAAG?
+The question we want to answer during this project is: _Which proteins are significantly expressed in the EVs and SFs and does that influence the transcriptome of the control group?_ 
 
 # Gathering information:
 
@@ -163,7 +163,7 @@ As a group we decided that everyone will think of a research question for this p
 
 **11-5-2025:**
 
-The research question I came up with is the following __What genes and proteins are differentially expressed in the control- and researchgroups in the dataset?__ since we need to write the article in Dutch I translated it as well: __Welke genen en eiwitten zijn differentieel tot expressie gebracht tussen de controle- en onderzoeksgroepen in de dataset?__
+The research question I came up with is the following _What genes and proteins are differentially expressed in the control- and researchgroups in the dataset?_ since we need to write the article in Dutch I translated it as well: _Welke genen en eiwitten zijn differentieel tot expressie gebracht tussen de controle- en onderzoeksgroepen in de dataset?_
 
 I also thought about which tools we can use to answer the research question I came up with. This is what I have so far:
 
@@ -174,11 +174,11 @@ I also thought about which tools we can use to answer the research question I ca
 
 **12-5-2025:**
 
-Today we discussed which research question we will use for this project. Ofcourse this is something that can change later on but for now we settled on: __Are there any pathways that changed in the COPD researchgroup in comparison to  the control group?__ and in Dutch: __Zijn er pathways veranderd in de COPD onderzoeksgroep ten opzichte van de controlegroep?__ 
+Today we discussed which research question we will use for this project. Ofcourse this is something that can change later on but for now we settled on: _Are there any pathways that changed in the COPD researchgroup in comparison to  the control group?_ and in Dutch: _Zijn er pathways veranderd in de COPD onderzoeksgroep ten opzichte van de controlegroep?_
 
 **14-5-2025:**
 
-As I discussed in the chapter ```Problem with the data```, we decided to change our research question based on the problem. Our new research question is: __Which proteins are significantly expressed in the EVs and SFs and does that influence the transcriptome of the control group?__ and in Dutch: __Welke eiwitten zijn in de EV’s en de SF’s significant aanwezig en heeft dat invloed op het transcriptoom van de controle, EV’s en SF’s?__
+As I discussed in the chapter ```Problem with the data```, we decided to change our research question based on the problem. Our new research question is: _Which proteins are significantly expressed in the EVs and SFs and does that influence the transcriptome of the control group?_ and in Dutch: _Welke eiwitten zijn in de EV’s en de SF’s significant aanwezig en heeft dat invloed op het transcriptoom van de controle, EV’s en SF’s?_
 
 # Project approach:
 
@@ -349,6 +349,7 @@ plotPCA(DESeqTransform(se), intgroup = "type",
         pcsToUse = 1:2,
         ntop = 11818)
 ```
+
 Looking at the output of the PCA I can clearly see that the groups cluster. The epcam cells are all the way at the left and the CCL cells are all the way to the right. Since the samples are from different cell types this is not a suprise. 
 
 Now I will preform a PCA based on group (control, extracellular vesicles, osteoglycin, and soluble factors).
@@ -358,6 +359,7 @@ plotPCA(DESeqTransform(se), intgroup = "group",
         pcsToUse = 1:2,
         ntop = 11818)
 ```
+
 When looking at the output of the PCA I can clearly see that approximately half of the samples are clustered on the left and the other half are clustered on the right, this can be explained by the cell types like I discussed in the previous PCA. 
 On the right side the CCL cells are shown, here I can see that the extracellular vesicles cluster slightly. Distinguishing between the other groups is difficult in this PCA, I can do it because of the colors, but based on the clustering distinguishing them would be hard. 
 
@@ -423,6 +425,7 @@ I will start by making a volcano plot voor the extracellular vesicles versus the
     y = "pvalue",
     title = "Extracellular vesicles vs. soluble factors")
 ```
+
 Interpretation extracellular vesicles vs. soluble factors:
 
 - The green dots show genes that passed that fold change threshold but not the p-value threshold.
@@ -436,6 +439,7 @@ Interpretation extracellular vesicles vs. soluble factors:
     y = 'pvalue',
     title = "control vs. extracellular vesicles")
 ```
+
 Interpretation control vs. extracellular vesicles:
 
 - The red dots show genes that are both significant by p-value and fold change. These genes are most likely very meaningful. The genes that are red in the plot are: Saa3, Lcn2, and Slpi all of these genes are downregulated.
@@ -450,6 +454,7 @@ Interpretation control vs. extracellular vesicles:
     y = 'pvalue',
     title = "control vs. soluble factors")
 ```
+
 Interpretation control vs. soluble factors:
 
 - The red dots show genes that are both significant by p-value and fold change. These genes are most likely very meaningful. The genes that are red in the plot are: Saa3, and Lcn2 all of these genes are downregulated.
