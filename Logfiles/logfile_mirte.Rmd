@@ -25,6 +25,7 @@ Loading libraries:
 library("readxl")
 library("DESeq2")
 library("S4Vectors")
+library("EnhancedVolcano")
 ```
 
 
@@ -152,6 +153,8 @@ Previously I described that we had a guest lecture from Karin Wolters, we asked 
 
 The EVs used for the transcriptomics dataset and the EVs used for the proteomics dataset come from completely different batches. This is a problem because this way we can not compare the two. For now our plan is to discuss with our teacher what to do next, because with these datasets we can not preform a multi-omics project. Most likely we will have to use a different dataset or change our entire project.
 
+We discussed the problem with our teacher and decided to change our research question, luckily we can use our initial approach for now. In the later steps we might need to make some changes.
+
 # Research question:
 
 **8-5-2025:**
@@ -172,6 +175,10 @@ I also thought about which tools we can use to answer the research question I ca
 **12-5-2025:**
 
 Today we discussed which research question we will use for this project. Ofcourse this is something that can change later on but for now we settled on: __Are there any pathways that changed in the COPD researchgroup in comparison to  the control group?__ and in Dutch: __Zijn er pathways veranderd in de COPD onderzoeksgroep ten opzichte van de controlegroep?__ 
+
+**14-5-2025:**
+
+As I discussed in the chapter ```Problem with the data```, we decided to change our research question based on the problem. Our new research question is: __Which proteins are significantly expressed in the EVs and SFs and does that influence the transcriptome of the control group?__ and in Dutch: __Welke eiwitten zijn in de EV’s en de SF’s significant aanwezig en heeft dat invloed op het transcriptoom van de controle, EV’s en SF’s?__
 
 # Project approach:
 
@@ -333,33 +340,137 @@ Over all it stands out that there is quite a big portion of low counts varying f
 After creating the summaries I can preform PCA and create plots of it. First I will preform PCA based on cell type (CCL and epcam)
 
 ```{r, message = FALSE}
-vsd <- vst(dds, blind=FALSE)
-plotPCA(vsd, intgroup = "type")
-```
+# Log2 transformation and centering data:
+dds <- estimateSizeFactors(dds)
+se <- SummarizedExperiment(log2(counts(dds, normalized = TRUE) + 1),
+                           colData = colData(dds))
 
+plotPCA(DESeqTransform(se), intgroup = "type",
+        pcsToUse = 1:2,
+        ntop = 11818)
+```
 Looking at the output of the PCA I can clearly see that the groups cluster. The epcam cells are all the way at the left and the CCL cells are all the way to the right. Since the samples are from different cell types this is not a suprise. 
 
 Now I will preform a PCA based on group (control, extracellular vesicles, osteoglycin, and soluble factors).
  
 ```{r, message = FALSE}
-plotPCA(vsd, intgroup="group")
+plotPCA(DESeqTransform(se), intgroup = "group",
+        pcsToUse = 1:2,
+        ntop = 11818)
 ```
-When looking at the output of the PCA I can clearly see that approximately half of the samples are clustered on the left and the other half are clustered on the right, this can be explained by the cell types like I discussed in the previous PCA. Furthermore I can see that the groups cluster slightly, osteoglycin is further away from the other groups and the control group is further away as well. Separating the extracellular vesicles and the soluble factors is hard because they're located in approximately the same spot on the plot.
+When looking at the output of the PCA I can clearly see that approximately half of the samples are clustered on the left and the other half are clustered on the right, this can be explained by the cell types like I discussed in the previous PCA. 
+On the right side the CCL cells are shown, here I can see that the extracellular vesicles cluster slightly. Distinguishing between the other groups is difficult in this PCA, I can do it because of the colors, but based on the clustering distinguishing them would be hard. 
+
+Most of the variance is shown on PC1 (73%), when looking at the plot this makes sense because on PC1 the different cell types (CCL and epcam) are seperated. 8% of the variance is explained by PC2 this is the variance between the different groups (control, extracellular vesicles, osteoglycin, and soluble factors).
+
+When comparing it to the PCA Jasper preformed there are differences. I Discussed this with my teacher, and this is most likely caused by how DESeq works. An interesting thing to further explore is preforming PCA for each cell type individually. 
+
+#### Comparison to original PCA:
+
+**15-5-2025:**
+
+Yesterday both Jasper and I preformed PCA, we had different results. So I decided to take a closer look at the transcriptomics analysis of the original article. 
+
+In figure 1b you can see the PCA preformed in the article from which we are using the data. Yesterday I worked on preforming PCA, I got a simmiliar result. I decided not to use this result because it did not use all genes and used as variance stabilizing normalization, and I used a log2 transformation. However Since they used this in the original article, I am going to preform PCA this way as well.
+
+```{r, echo=FALSE, fig.cap="Figure 1: An image containing 11 different plots about transcriptomics. The image was taken from the original article.", out.width="75%", fig.pos="H"}
+    knitr::include_graphics("imgs/transcriptomics_original.png")
+```
+
+Below you can see the new PCA preformed in (presumably) the same way as in the article. 
+
+```{r, message = FALSE}
+vsd <- vst(dds, nsub=500)
+
+plotPCA(vsd, intgroup = "group",
+        pcsToUse = 1:2,
+        ntop = 500) +
+  aes(shape = type) +
+  scale_shape_manual(values = c("ccl" = 19, "epcam" = 17))
+```
+
+When looking at the new PCA I can see that it is almost identical to the one from the original article (figure 1b), however there are some differences:
+
+- The scale of the X-axis is different, but when looking at the position of the data points in comparison to the original the values look the same.
+- My plot uses a different theme than the original but that is a personal choice.
+- My plot uses different sample names, but that is a personal choice as well.
+- In my plot I used different shapes to indicate the cell type, in the original they used different colors to indicate the cell type. I think my version is better because this way you can compare the different groups of the different cell types easier than when they are different colors.
+
+Besides comparing my PCA to the original it is important to interpret it as well. PC1 explains 95% of the variance, this seems to be caused by the different cell types (CCL and epcam). PC2 explains 2% of the variance. When looking at the plot there is some clustering of the different groups but some are hard to distinguish, mainly the soluble factors and the extracellular vesicles. 
+Since so much of the variance is caused by the different cell types, it would be interesting to look at the two cell types separately.
 
 # DESeq proteomics:
 
-# Vulcano plots:
+Ivar is going to use DESeq for analysis of the proteomics data.
+
+# Volcano plots:
 
 ## Transcriptomics:
 
+**15-5-2025:**
+
+In the original article they made volcano plots as well (figure 1c and figure 1e). In these volcano plots they compared the response to OGN versus control in epithelial progenitor cells (figure 1c) and they compared the response to OGN versus versus control in fibroblasts (figure 1e). 
+For our research question we want to compare the EVs and the SFs, so OGN is not of interest to us. For this reason I will not be replicating the original volcano plots, but create volcano plots using other groups: extracellular vesicles versus soluble factors, control versus extracellular vesicles, and control versus soluble factors. 
+
+A volcano plot is a type of scatter plot used for differntial expression analysis. On the top left it shows genes that are downregulated, on the top right it shows genes that are upregulated, and on the bottom center is shows genes with little change.
+
+I will start by making a volcano plot voor the extracellular vesicles versus the soluble factors.
+
+```{r, fig.height=5.5}
+  EnhancedVolcano(extracellular_vs_soluble,
+    lab = rownames(extracellular_vs_soluble),
+    x = "log2FoldChange",
+    y = "pvalue",
+    title = "Extracellular vesicles vs. soluble factors")
+```
+Interpretation extracellular vesicles vs. soluble factors:
+
+- The green dots show genes that passed that fold change threshold but not the p-value threshold.
+- The blue dots show genes that passed the p-value threshold but not the fold change threshold.
+- The grey dots show genes that passed neither thresholds.
+
+```{r, fig.height = 5.5}
+  EnhancedVolcano(control_vs_extracellular,
+    lab = rownames(control_vs_extracellular),
+    x = 'log2FoldChange',
+    y = 'pvalue',
+    title = "control vs. extracellular vesicles")
+```
+Interpretation control vs. extracellular vesicles:
+
+- The red dots show genes that are both significant by p-value and fold change. These genes are most likely very meaningful. The genes that are red in the plot are: Saa3, Lcn2, and Slpi all of these genes are downregulated.
+- The green dots show genes that passed that fold change threshold but not the p-value threshold.
+- The blue dots show genes that passed the p-value threshold but not the fold change threshold.
+- The grey dots show genes that passed neither thresholds.
+
+```{r, fig.height = 5.5}
+  EnhancedVolcano(control_vs_soluble,
+    lab = rownames(control_vs_soluble),
+    x = 'log2FoldChange',
+    y = 'pvalue',
+    title = "control vs. soluble factors")
+```
+Interpretation control vs. soluble factors:
+
+- The red dots show genes that are both significant by p-value and fold change. These genes are most likely very meaningful. The genes that are red in the plot are: Saa3, and Lcn2 all of these genes are downregulated.
+- The green dots show genes that passed that fold change threshold but not the p-value threshold.
+- The grey dots show genes that passed neither thresholds.
+
+I think it would be useful to look more into the following genes for our project: Saa3, Lcn2, and Slpi. For further analysis we will preform pathway analysis as well.
+
 ## Proteomics:
+
+Ivar is going to make volcano plots for the proteomics data.
 
 # Pathway analysis:
 
 ## Transcriptomics:
 
+Jasper is going to preform pathway analysis for the transcriptomics data.
+
 ## Proteomics:
 
+Kasthury is going to preform pathway analysis for the proteomics.
 
 
 
