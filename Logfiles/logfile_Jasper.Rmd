@@ -136,15 +136,179 @@ head(fgsea_ora)
 ```
 
 ```{r}
-data <- read.csv("../data/GSE271272_rawcounts.csv")
+if(!require(devtools)) install.packages("devtools")
+devtools::install_github("sinhrks/ggfortify")
+library(ggplot2)
+library(ggfortify)
+```
+
+
+```{r}
+data <- read.csv("../data/GSE271272_rawcounts.csv", row.names = 1)
 head(data)
 ```
-```{r}
-library(ggplot2)
-library(factoextra)
-```
+
 
 ```{r}
 t_data = t(data)
+```
+
+```{r}
+log_data <- log2(t_data +1)
+data_scaled <- scale(log_data)
+```
+
+```{r}
+pca_result <- prcomp(data_scaled, scale. = T)
+pca_result
+```
+
+
+```{r}
+# Splits sample naam in onderdelen
+metadata <- data.frame(
+  sample = rownames(t_data),
+  groep = sapply(strsplit(rownames(t_data), "_"), `[`, 2),
+  celtype = sapply(strsplit(rownames(t_data), "_"), `[`, 3)
+)
+
+
+rownames(metadata) <- metadata$sample
+metadata$groep_celtype <- paste(metadata$groep, metadata$celtype, sep = "_")
+```
+
+```{r}
+autoplot(pca_result,
+         data = metadata,
+         colour= 'groep',
+         x=1,
+         y=2
+         )+
+  ggtitle("celtype")+
+  theme_minimal()
+```
+# Pathway analuse
+Nu ga ik bezig met de path way analyse met de deseq2 die ik van Mirte heb gekregen 
+```{r}
+library(DESeq2)
+```
+
+```{r}
+rna_seq_data <- read.csv(
+  "../data/GSE271272_rawcounts.csv")
+
+head(rna_seq_data)
+```
+```{r}
+cts <- data.frame(rna_seq_data[,-1])
+colnames(cts) <- colnames(rna_seq_data)[-1]
+row.names(cts) <- rna_seq_data$Sample
+cts <- as.matrix(cts)
+```
+
+```{r}
+sample_names <- c("M1_ctrl_Epcam", "M2_ctrl_Epcam", "M3_ctrl_Epcam", "M4_ctrl_Epcam",
+            "M1_EVs_Epcam", "M2_EVs_Epcam", "M3_EVs_Epcam", "M4_EVs_Epcam",
+            "M1_SFs_Epcam", "M2_SFs_Epcam", "M3_SFs_Epcam", "M4_SFs_Epcam",
+            "M1_OGN_Epcam", "M2_OGN_Epcam", "M3_OGN_Epcam", "M4_OGN_Epcam",
+            "M1_ctrl_CCL", "M2_ctrl_CCL", "M3_ctrl_CCL", "M4_ctrl_CCL",
+            "M1_EVs_CCL", "M2_EVs_CCL", "M3_EVs_CCL", "M4_EVs_CCL",
+            "M1_SFs_CCL", "M2_SFs_CCL", "M3_SFs_CCL", "M4_SFs_CCL",
+            "M1_OGN_CCL", "M2_OGN_CCL", "M3_OGN_CCL", "M4_OGN_CCL")
+
+group <- rep(c("control", "extracellular_vesicles", "soluble_factors", "osteoglycin"), each = 4, times = 2)
+type <- rep(c("epcam", "ccl"), each = 16)
+
+metadata <- data.frame(group = factor(group), type = type)
+rownames(metadata) <- sample_names
+
+head(metadata)
+```
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = cts,
+                              colData = metadata,
+                              design = ~ group)
+```
+
+
+```{r}
+dds <- DESeq(dds)
+control_vs_extracellular <- results(dds, contrast = c("group", "control", "extracellular_vesicles"))
+control_vs_soluble <- results(dds, contrast = c("group", "control", "soluble_factors"))
+extracellular_vs_soluble <- results(dds, contrast = c("group", "extracellular_vesicles", "soluble_factors"))
+```
+
+Na dat alles kan ik verder. 
+
+```{r}
+gene_ranks_crl_extra <- control_vs_extracellular$stat
+names(gene_ranks_crl_extra) <- rownames(control_vs_extracellular)
+gene_ranks_crl_extra <- sort(gene_ranks_crl_extra, decreasing = TRUE)
+```
+
+```{r}
+gene_ranks_crl_sol <- control_vs_soluble$stat
+names(gene_ranks_crl_sol) <- rownames(control_vs_soluble)
+gene_ranks_crl_sol <- sort(gene_ranks_crl_sol, decreasing = TRUE)
+```
+
+```{r}
+gene_ranks_extra_sol <- extracellular_vs_soluble$stat
+names(gene_ranks_extra_sol) <- rownames(extracellular_vs_soluble)
+gene_ranks_extra_sol <- sort(gene_ranks_extra_sol, decreasing = TRUE)
+```
+
+```{r}
+library(clusterProfiler)
+library(org.Mm.eg.db)
+
+gsea_res <- gseGO(geneList = gene_ranks_crl_extra,
+                  OrgDb = org.Mm.eg.db,
+                  keyType = "SYMBOL",
+                  ont = "BP",
+                  minGSSize = 10,
+                  maxGSSize = 500,
+                  pvalueCutoff = 0.05)
+```
+```{r}
+dotplot(gsea_res, showCategory=5, split=".sign") + facet_grid(.~.sign) + theme(axis.text.y = element_text(size = 9))
+```
+
+```{r}
+ridgeplot(gsea_res, showCategory = 10, fill = "p.adjust")
+```
+
+
+```{r}
+emapplot(gsea_res, showCategory = 20)
+```
+```{r}
+heatplot(gsea_res, showCategory = 10)
+```
+
+```{r}
+gsea_res_2 <- gseGO(geneList = gene_ranks_crl_sol,
+                  OrgDb = org.Mm.eg.db,
+                  keyType = "SYMBOL",
+                  ont = "BP",
+                  minGSSize = 10,
+                  maxGSSize = 500,
+                  pvalueCutoff = 0.05)
+
+# Plots
+dotplot(gsea_res_2)
+```
+```{r}
+gsea_res_3 <- gseGO(geneList = gene_ranks_extra_sol,
+                  OrgDb = org.Mm.eg.db,
+                  keyType = "SYMBOL",
+                  ont = "BP",
+                  minGSSize = 10,
+                  maxGSSize = 500,
+                  pvalueCutoff = 0.05)
+
+# Plots
+dotplot(gsea_res_3)
 ```
 
