@@ -245,6 +245,9 @@ Na dat alles kan ik verder.
 gene_ranks_crl_extra <- control_vs_extracellular$stat
 names(gene_ranks_crl_extra) <- rownames(control_vs_extracellular)
 gene_ranks_crl_extra <- sort(gene_ranks_crl_extra, decreasing = TRUE)
+head(gene_ranks_crl_extra)
+
+
 ```
 
 ```{r}
@@ -271,21 +274,71 @@ gsea_res <- gseGO(geneList = gene_ranks_crl_extra,
                   maxGSSize = 500,
                   pvalueCutoff = 0.05)
 ```
+
 ```{r}
-dotplot(gsea_res, showCategory=5, split=".sign") + facet_grid(.~.sign) + theme(axis.text.y = element_text(size = 9))
+dotplot(gsea_res, showCategory=5, split=".sign") + facet_grid(.~.sign) + theme(axis.text.y = element_text(size = 9))+ labs(title = 'control vs extracellular')
 ```
 
 ```{r}
-ridgeplot(gsea_res, showCategory = 10, fill = "p.adjust")
+ridgeplot(gsea_res, fill = "p.adjust")+ theme_minimal() + labs(title = 'control vs extracellular')
 ```
 
 
 ```{r}
-emapplot(gsea_res, showCategory = 20)
+df_genes <- data.frame(
+  symbol = names(gene_ranks_crl_extra),
+  stat = gene_ranks_crl_extra
+)
+df_mapped <- df_genes %>%
+  left_join(
+    AnnotationDbi::select(org.Mm.eg.db,
+                          keys = df_genes$symbol,
+                          columns = c("ENTREZID", "SYMBOL"),
+                          keytype = "SYMBOL"),
+    by = c("symbol" = "SYMBOL")
+  ) %>%
+  filter(!is.na(ENTREZID))
+
+
+geneList <- df_mapped$stat
+names(geneList) <- df_mapped$ENTREZID
+
 ```
+
+
 ```{r}
-heatplot(gsea_res, showCategory = 10)
+library(pathview)
+
+setwd("imgs_trans/control_vs_extracellular")
+# KEGG: Oxidative phosphorylation (mmu00190)
+pathview(
+  gene.data = geneList,
+  pathway.id = "mmu00190",
+  species = "mmu",
+  kegg.native = TRUE,
+  out.suffix = "oxphos"
+)
+
+# KEGG: Purine metabolism (mmu00230)
+pathview(
+  gene.data = geneList,
+  pathway.id = "mmu00230",
+  species = "mmu",
+  kegg.native = TRUE,
+  out.suffix = "purine"
+)
+
+# KEGG: Translation (mmu03010)
+pathview(
+  gene.data = geneList,
+  pathway.id = "mmu03010",
+  species = "mmu",
+  kegg.native = TRUE,
+  out.suffix = "translation"
+)
+
 ```
+
 
 ```{r}
 gsea_res_2 <- gseGO(geneList = gene_ranks_crl_sol,
@@ -296,9 +349,81 @@ gsea_res_2 <- gseGO(geneList = gene_ranks_crl_sol,
                   maxGSSize = 500,
                   pvalueCutoff = 0.05)
 
-# Plots
-dotplot(gsea_res_2)
 ```
+
+```{r}
+dotplot(gsea_res_2, showCategory=5, split=".sign") + facet_grid(.~.sign) + theme(axis.text.y = element_text(size = 9))+ labs(title = 'Control vs soluble')
+```
+
+```{r}
+ridgeplot(gsea_res_2, showCategory = 10, fill = "p.adjust")+ theme_minimal()+ labs(title = 'Control vs soluble')
+```
+
+
+```{r}
+df_genes_2 <- data.frame(
+  symbol = names(gene_ranks_crl_extra),
+  stat = gene_ranks_crl_extra
+)
+df_mapped_2 <- df_genes_2 %>%
+  left_join(
+    AnnotationDbi::select(org.Mm.eg.db,
+                          keys = df_genes$symbol,
+                          columns = c("ENTREZID", "SYMBOL"),
+                          keytype = "SYMBOL"),
+    by = c("symbol" = "SYMBOL")
+  ) %>%
+  filter(!is.na(ENTREZID))
+
+
+geneList_2 <- df_mapped_2$stat
+names(geneList_2) <- df_mapped_2$ENTREZID
+```
+
+```{r}
+setwd("imgs_trans/control_vs_soluble")
+# Glycolysis (meerdere termen)
+pathview(
+  gene.data = geneList_2,
+  pathway.id = "mmu00010",
+  species = "mmu",
+  out.suffix = "glycolysis"
+)
+
+# Oxidative phosphorylation / NADH regeneration
+pathview(
+  gene.data = geneList_2,
+  pathway.id = "mmu00190",
+  species = "mmu",
+  out.suffix = "oxphos"
+)
+
+# Mitochondrial translation
+pathview(
+  gene.data = geneList_2,
+  pathway.id = "mmu03008",
+  species = "mmu",
+  out.suffix = "mito_translation"
+)
+
+# NF-kappa B signaling
+pathview(
+  gene.data = geneList_2,
+  pathway.id = "mmu04064",
+  species = "mmu",
+  out.suffix = "nfkb"
+)
+
+# Toll-like receptor signaling
+pathview(
+  gene.data = geneList_2,
+  pathway.id = "mmu04620",
+  species = "mmu",
+  out.suffix = "toll_like"
+)
+
+```
+
 ```{r}
 gsea_res_3 <- gseGO(geneList = gene_ranks_extra_sol,
                   OrgDb = org.Mm.eg.db,
@@ -308,7 +433,68 @@ gsea_res_3 <- gseGO(geneList = gene_ranks_extra_sol,
                   maxGSSize = 500,
                   pvalueCutoff = 0.05)
 
-# Plots
-dotplot(gsea_res_3)
+```
+
+```{r}
+dotplot(gsea_res_3, showCategory=5, split=".sign") + facet_grid(.~.sign) + theme(axis.text.y = element_text(size = 9)) + labs(title = 'Extracellular vs soluble')
+```
+
+```{r}
+ridgeplot(gsea_res_3, showCategory = 10, fill = "p.adjust")+ theme_minimal()+ theme(axis.text.y = element_text(size = 9))+ labs(title = 'Extracellular vs soluble')
+```
+
+```{r}
+df_genes_3 <- data.frame(
+  symbol = names(gene_ranks_crl_extra),
+  stat = gene_ranks_crl_extra
+)
+df_mapped_3 <- df_genes_3 %>%
+  left_join(
+    AnnotationDbi::select(org.Mm.eg.db,
+                          keys = df_genes$symbol,
+                          columns = c("ENTREZID", "SYMBOL"),
+                          keytype = "SYMBOL"),
+    by = c("symbol" = "SYMBOL")
+  ) %>%
+  filter(!is.na(ENTREZID))
+
+
+geneList_3 <- df_mapped_3$stat
+names(geneList_3) <- df_mapped_3$ENTREZID
+```
+```{r}
+setwd("imgs_trans/extracellular_vs_soluble")
+
+# Ribosome / cytoplasmic translation
+pathview(
+  gene.data = geneList_3,
+  pathway.id = "mmu03010",
+  species = "mmu",
+  out.suffix = "ribosome"
+)
+
+# Mitochondrial translation
+pathview(
+  gene.data = geneList_3,
+  pathway.id = "mmu03008",
+  species = "mmu",
+  out.suffix = "mito_translation"
+)
+
+# Oxidative phosphorylation
+pathview(
+  gene.data = geneList_3,
+  pathway.id = "mmu00190",
+  species = "mmu",
+  out.suffix = "oxphos"
+)
+
+# Purine metabolism
+pathview(
+  gene.data = geneList_3,
+  pathway.id = "mmu00230",
+  species = "mmu",
+  out.suffix = "purine"
+)
 ```
 
