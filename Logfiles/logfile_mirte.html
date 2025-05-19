@@ -11,7 +11,7 @@
 
 <meta name="author" content="Mirte Draaijer" />
 
-<meta name="date" content="2025-05-15" />
+<meta name="date" content="2025-05-19" />
 
 <title>Logboek Mirte</title>
 
@@ -1321,6 +1321,29 @@ if (window.hljs) {
 
 
 
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
 
 
 
@@ -1481,7 +1504,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">Logboek Mirte</h1>
 <h4 class="author">Mirte Draaijer</h4>
-<h4 class="date">2025-05-15</h4>
+<h4 class="date">2025-05-19</h4>
 
 </div>
 
@@ -1782,29 +1805,35 @@ approach. But for now this is how we will start.</p>
 </div>
 <div id="deseq" class="section level1">
 <h1>DESeq:</h1>
+<div id="proteomics" class="section level2">
+<h2>Proteomics:</h2>
+<p>Ivar is going to use DESeq for analysis of the proteomics data.</p>
+</div>
+<div id="transcriptomics" class="section level2">
+<h2>Transcriptomics:</h2>
 <p><strong>12-5-2025:</strong></p>
 <p>During a meeting with my group we discussed that I will work on DESeq
 for differential gene expression. Karin still needs to get back to us
 about which sample is which. But I can start on writing code for
 implementing DESeq and I can test on data I still have from an old
 project.</p>
-<div id="background-info" class="section level2">
-<h2>Background info:</h2>
+<div id="background-info" class="section level3">
+<h3>Background info:</h3>
 <p><strong>12-5-2025:</strong></p>
 <p>DESeq2 is used for detecting differentially expressed genes from
 count data. The package DESeq2 provides methods to test for differential
 expression by use of negative binomial generalized linear models.</p>
-<p>BRON nog goed zetten: <a href="https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html" class="uri">https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html</a></p>
+<p><span class="citation">(Love, Huber, and Anders 2014)</span></p>
 </div>
-<div id="implementing" class="section level2">
-<h2>Implementing:</h2>
+<div id="implementing" class="section level3">
+<h3>Implementing:</h3>
 <p><strong>12-5-2025:</strong></p>
 <p>Karin still needs to get back to us on which sample is which, for now
 I will implement DESeq to use all samples, but I can change this later
 on if we’re not going to use all samples. If I have working code
 changing it to use the correct groups will be easy.</p>
-<div id="step-1-loading-the-data" class="section level3">
-<h3>Step 1 loading the data:</h3>
+<div id="step-1-loading-the-data" class="section level4">
+<h4>Step 1 loading the data:</h4>
 <pre class="r"><code>rna_seq_data &lt;- read.csv(
   &quot;omic_epithelial_cell_repair/data/GSE271272_rawcounts.csv&quot;)
 
@@ -1867,8 +1896,8 @@ is a count representing how many reads of the gene were found in the
 sample.</li>
 </ul>
 </div>
-<div id="step-2-constructing-deseq-dataset" class="section level3">
-<h3>Step 2 constructing DESeq dataset:</h3>
+<div id="step-2-constructing-deseq-dataset" class="section level4">
+<h4>Step 2 constructing DESeq dataset:</h4>
 <p>To construct the DESeq dataset, the original data needs to be
 reconstructed.</p>
 <pre class="r"><code>cts &lt;- data.frame(rna_seq_data[,-1])
@@ -1926,8 +1955,8 @@ continue working on the server.</p>
 suggestion was made by the teacher who helped me sort of fix the issue
 with DESeq2. Deleting and reinstalling DESeq2 made it work again.</p>
 </div>
-<div id="step-3-generating-summary" class="section level3">
-<h3>Step 3 generating summary:</h3>
+<div id="step-3-generating-summary" class="section level4">
+<h4>Step 3 generating summary:</h4>
 <p>As a first step to analyse the data I will create a summary for each
 group combination:</p>
 <ul>
@@ -2002,8 +2031,8 @@ the following things stand out:</p>
 counts varying from 43% (control vs extracellular) to 48% (extracellular
 vs soluble).</p>
 </div>
-<div id="step-4-pca" class="section level3">
-<h3>Step 4 PCA:</h3>
+<div id="step-4-pca" class="section level4">
+<h4>Step 4 PCA:</h4>
 <p><strong>14-5-2025:</strong></p>
 <p>After creating the summaries I can preform PCA and create plots of
 it. First I will preform PCA based on cell type (CCL and epcam)</p>
@@ -2043,8 +2072,8 @@ osteoglycin, and soluble factors).</p>
 I Discussed this with my teacher, and this is most likely caused by how
 DESeq works. An interesting thing to further explore is preforming PCA
 for each cell type individually.</p>
-<div id="comparison-to-original-pca" class="section level4">
-<h4>Comparison to original PCA:</h4>
+<div id="comparison-to-original-pca" class="section level5">
+<h5>Comparison to original PCA:</h5>
 <p><strong>15-5-2025:</strong></p>
 <p>Yesterday both Jasper and I preformed PCA, we had different results.
 So I decided to take a closer look at the transcriptomics analysis of
@@ -2101,13 +2130,14 @@ the two cell types separately.</p>
 </div>
 </div>
 </div>
-<div id="deseq-proteomics" class="section level1">
-<h1>DESeq proteomics:</h1>
-<p>Ivar is going to use DESeq for analysis of the proteomics data.</p>
 </div>
 <div id="volcano-plots" class="section level1">
 <h1>Volcano plots:</h1>
-<div id="transcriptomics" class="section level2">
+<div id="proteomics-1" class="section level2">
+<h2>Proteomics:</h2>
+<p>Ivar is going to make volcano plots for the proteomics data.</p>
+</div>
+<div id="transcriptomics-1" class="section level2">
 <h2>Transcriptomics:</h2>
 <p><strong>15-5-2025:</strong></p>
 <p>In the original article they made volcano plots as well (figure 1c
@@ -2177,24 +2207,59 @@ not the p-value threshold.</li>
 our project: Saa3, Lcn2, and Slpi. For further analysis we will preform
 pathway analysis as well.</p>
 </div>
-<div id="proteomics" class="section level2">
-<h2>Proteomics:</h2>
-<p>Ivar is going to make volcano plots for the proteomics data.</p>
-</div>
 </div>
 <div id="pathway-analysis" class="section level1">
 <h1>Pathway analysis:</h1>
-<div id="transcriptomics-1" class="section level2">
+<div id="proteomics-2" class="section level2">
+<h2>Proteomics:</h2>
+<p>Kasthury is going to preform pathway analysis for the proteomics.</p>
+</div>
+<div id="transcriptomics-2" class="section level2">
 <h2>Transcriptomics:</h2>
 <p>Jasper is going to preform pathway analysis for the transcriptomics
 data.</p>
 </div>
-<div id="proteomics-1" class="section level2">
-<h2>Proteomics:</h2>
-<p>Kasthury is going to preform pathway analysis for the proteomics.</p>
+</div>
+<div id="pls-da" class="section level1">
+<h1>PLS-DA:</h1>
+<p>For finding the connections between the two datasets we will be
+preforming PLS-DA. As a first step I will look up some more information
+about PLS-DA, what is it? How can we use it?</p>
+<div id="gathering-information-1" class="section level2">
+<h2>Gathering information:</h2>
+<p><strong>19-5-2025:</strong></p>
+<p>PLS-DA was recommended to us by our teacher for this project. I will
+look up some more information about it, so that we can use it in our
+project. Partial least squares-discriminant analysis (PLS-DA) is a
+versatile algorithm that can be used for predictive and descriptive
+modellings as well for discriminative variable selection.</p>
+<p><span class="citation">(Lee, Liong, and Jemain 2018)</span></p>
+<p>PLS-DA is often used for identifying biomarkers, distinguishing
+between physiological states, and predicting class membership for new
+samples based on their metabolite profiles.</p>
+<p><span class="citation">(Metabolon 2025)</span></p>
+<p>Since our research question is: <em>Which proteins are significantly
+expressed in the EVs and SFs and does that influence the transcriptome
+of the control group?</em> PLS-DA will be a good contestant for
+analyzing the data. Tomorrow We will ask our teacher for some more help
+on implementing PLS-DA.</p>
+<p>As a group we talked about implementing PLS-DA, for the information
+we have now on PLS-DA this is how we want to preform it:</p>
+<ul>
+<li>PLS-DA individually on transcriptomics data and individually on
+proteomics data.</li>
+<li>PLS-DA across the two datastes.</li>
+</ul>
+<p>The individual implementation is something we can already start
+working on, PLS-DA across the two datasets is something we need to
+gather some more information on we will do this by asking our
+teacher.</p>
+</div>
+</div>
+<div id="vsd" class="section level1">
+<h1>VSD:</h1>
 <p><strong>EVEN KIJKEN HOE IK DIT DEEL IN MIJN LOGBOEK WIL
 DOEN!!!</strong></p>
-</div>
 </div>
 <div id="exploratory-data-analysis" class="section level1">
 <h1>Exploratory data analysis:</h1>
@@ -2309,8 +2374,26 @@ fact that the RNA sequencing data seems to have more samples. This is a
 problem, I think we need to discuss with our teachers.</p>
 </div>
 </div>
-<div id="comfirmatory-data-analysis" class="section level1">
-<h1>Comfirmatory data analysis</h1>
+<div id="comfirmatory-data-analysis" class="section level1 unnumbered">
+<h1 class="unnumbered">Comfirmatory data analysis</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-lee-2018" class="csl-entry">
+Lee, Loong Chuen, Choong-Yeun Liong, and Abdul Aziz Jemain. 2018.
+<span>“<span class="nocase">Partial least squares-discriminant analysis
+(PLS-DA) for classification of high-dimensional (HD) data: a review of
+contemporary practice strategies and knowledge gaps</span>.”</span>
+<em>The Analyst</em> 143 (15): 3526–39. <a href="https://doi.org/10.1039/c8an00599k">https://doi.org/10.1039/c8an00599k</a>.
+</div>
+<div id="ref-love-2014" class="csl-entry">
+Love, Michael I, Wolfgang Huber, and Simon Anders. 2014. <span>“<span class="nocase">Moderated estimation of fold change and dispersion for
+RNA-seq data with DESeq2</span>.”</span> <em>Genome Biology</em> 15
+(12). <a href="https://doi.org/10.1186/s13059-014-0550-8">https://doi.org/10.1186/s13059-014-0550-8</a>.
+</div>
+<div id="ref-metabolon-inc-2025" class="csl-entry">
+Metabolon, Inc. 2025. <span>“<span>Partial Least Squares Discriminant
+Analysis (PLS-DA) | Metabolon</span>.”</span> <a href="https://www.metabolon.com/bioinformatics/pls-da/#:~:text=PLS%2DDA%20Overview&amp;text=This%20method%20is%20particularly%20beneficial,based%20on%20their%20metabolite%20profiles.">https://www.metabolon.com/bioinformatics/pls-da/#:~:text=PLS%2DDA%20Overview&amp;text=This%20method%20is%20particularly%20beneficial,based%20on%20their%20metabolite%20profiles.</a>
+</div>
+</div>
 </div>
 
 
