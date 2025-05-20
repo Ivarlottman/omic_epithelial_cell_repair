@@ -383,7 +383,7 @@ Yesterday both Jasper and I preformed PCA, we had different results. So I decide
 In figure 1b you can see the PCA preformed in the article from which we are using the data. Yesterday I worked on preforming PCA, I got a simmiliar result. I decided not to use this result because it did not use all genes and used as variance stabilizing normalization, and I used a log2 transformation. However Since they used this in the original article, I am going to preform PCA this way as well.
 
 ```{r, echo=FALSE, fig.cap="Figure 1: An image containing 11 different plots about transcriptomics. The image was taken from the original article.", out.width="75%", fig.pos="H"}
-    knitr::include_graphics("transcriptomics_original.png")
+    knitr::include_graphics("imgs/transcriptomics_original.png")
 ```
 
 Below you can see the new PCA preformed in (presumably) the same way as in the article. 
@@ -502,11 +502,51 @@ Since our research question is: _Which proteins are significantly expressed in t
 As a group we talked about implementing PLS-DA, for the information we have now on PLS-DA this is how we want to preform it: 
 
 - PLS-DA individually on transcriptomics data and individually on proteomics data.
-- PLS-DA across the two datastes.
+- PLS-DA across the two datasets.
 
 The individual implementation is something we can already start working on, PLS-DA across the two datasets is something we need to gather some more information on we will do this by asking our teacher.
 
+## Implementing:
+
+**20-5-2025:**
+
+PLSDA NOG INTERPRETEREN ENZO!
+
+Today I am going to start working on implementing the PLS-DA, for this I will ask my teacher for help because I have already searched some information but I am having a hard time figuring it out myself. After getting some help from my teacher I have a workings PLSDA.
+
+The first step is obtaining the group names.
+```{r}
+# Extracting the different groups:
+group <- rownames(plsda_data)
+group2 <- gsub('M[1,2,3,4]_','',group)
+group2 <- c(group2[-1])
+group2
+```
+After obtaining the group names, I can make the PLS-DA model.
+```{r}
+model <- mdatools::plsda(x = t(rna_seq_data[,-1]), c = group2, cv = 1)
+```
+
+Now that I have the model there are some functions I can use to look at the results and interpret them.
+```{r}
+summary(model)
+```
+
+```{r}
+plot(model)
+```
+VOOR DE PLOTS ENZO NOG EVEN KIJKEN HOE DIT PRECIES ZIT.
+
+```{r}
+mdatools::getConfusionMatrix(model$calres)
+```
+Kijkend naar de confusion matrix lijkt er nog iets fout te gaan?
+
 # VSD:
+
+
+
+
 
 
 
@@ -562,3 +602,5 @@ Now that I've looked at the first few lines it's important to compare the two fi
 When looking at both the files it is hard to see which line in the proteomics data belongs to which line in the RNA sequencing data, because the samples do not have the same name. Another problem is the fact that the RNA sequencing data seems to have more samples. This is a problem, I think we need to discuss with our teachers.
 
 # Comfirmatory data analysis
+
+# Resources:
