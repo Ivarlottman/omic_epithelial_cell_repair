@@ -1,0 +1,304 @@
+---
+title: "Logfile_Kasthury"
+author: "Kasthury Inparajah"
+date: "2025-05-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Proteomics
+## Introduction of this project
+What are we going to do in this project?
+
+## The article
+Write about the article, some background information, keynotes
+
+## Data
+What is the data and where is it from?
+
+## 23-4-2025 
+### Finding related articles
+write about assignments and found articles and overview of it
+
+## 24-4-2025
+**"High-throughput proteomics: a methodological mini-review"**
+**"Understudied proteins: opportunities and challenges for functional proteomics"**
+
+## Install libraries
+```{r Install packages}
+install.packages("readxl")
+install.packages("imputeLCMD")
+```
+```{r PCAtools download}
+  if (!requireNamespace('BiocManager', quietly = TRUE))
+    install.packages('BiocManager')
+
+  BiocManager::install('PCAtools')
+```
+## Load libraries
+```{r Load libraries}
+library(dplyr)
+library(tidyr)
+library(readxl)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(ReactomePA)
+library(enrichplot)
+```
+
+## EDA
+### **Transcriptomics**
+```{r Transcriptomics data}
+data_transcriptomics <- read.csv("Documents/Omics/omic_epithelial_cell_repair/data/GSE271272_rawcounts.csv")
+head(data_transcriptomics)
+```
+
+### **Proteomics**
+```{r Proteomics data}
+data_proteomics <- read_excel("Documents/Omics/omic_epithelial_cell_repair/data/2021-36_2021-42_SN16withHELAlib_MS2Quant_Qclassic_LocalNorm_NoImp.xlsx")
+head(data_proteomics)
+```
+It is noticeable that a lot of values are "Filtered". This makes it difficult to include these data when we analyse the dataset, thus why we need to impute these values.
+
+Besides the filtered data, some samples with numerical values, e.g. from column *2021-36_EV1* are characters instead of numbers.
+
+Now we need to check if the data has any duplicates for the proteins or genes columns. This is crucial because duplicates might influence future analysis and referring to a specific gene becomes almost impossible. 
+
+```{r Check for any duplicates}
+# Check for duplicates in this columns
+
+# Genes
+genes <- data_proteomics$PG.Genes
+any(duplicated(genes))
+
+# Proteins
+proteins <- data_proteomics$PG.ProteinGroups
+any(duplicated(proteins))
+```
+
+The check for duplicates in the genes has returned positive, this means that the column gene has duplicates. 
+Let's see which gene(s) are duplicated and how many times:
+
+```{r Duplicated genes}
+# Which gene(s) are duplicated?
+duplicates <- genes[duplicated(genes)]
+unique(duplicates)
+
+# How many times it is duplicated?
+table(genes[genes %in% duplicates])
+```
+
+The gene "TMPO" is 2x duplicated. As a solution for this problem, we can make unique rownames with the gene name added by the times it is duplicated.
+
+```{r Unique rownames, eval=FALSE}
+# Change to df
+data_proteomics <- as.data.frame(data_proteomics)
+# Unique genname
+unique_genes <- make.unique(data_proteomics$PG.Genes)
+rownames(data_proteomics) <- unique_genes
+```
+
+But before we change it, let's make a subset of the dataset divided in EV (extracellular vesicles) and SF (soluble factors).
+
+```{r Subset EV & SF}
+# EV
+ev_cols <- colnames(data_proteomics)[grepl("_EV|PG.ProteinGroups|PG.Genes", colnames(data_proteomics))]
+
+ev_data <- data_proteomics[, ev_cols]
+
+# SF
+sf_cols <- colnames(data_proteomics)[grepl("_SF|PG.ProteinGroups|PG.Genes", colnames(data_proteomics))]
+
+sf_data <- data_proteomics[, sf_cols]
+```
+
+We now have to remove the metadata from the subset for further analysis e.g. PCA plots.
+
+```{r Remove metadata}
+# Remove metadata EV and SF
+ev_numeric <- ev_data[, -c(1,2)]
+sf_numeric <- sf_data[, -c(1,2)]
+```
+
+After we have removed the metadata, we have to change the datatype to numeric. But we first need to change the filtered values to NA.
+
+```{r Change "Filtered" to "NA"}
+# For EV
+ev_numeric[ev_numeric == "Filtered"] <- NA
+ev_numeric[ev_numeric == ""] <- NA
+# For SF
+sf_numeric[sf_numeric == "Filtered"] <- NA
+sf_numeric[sf_numeric == ""] <- NA
+```
+
+Since the dataset has characters instead of numbers, we have to change the datatype.
+
+```{r Change datatype}
+# For EV and SF
+ev_numeric <- as.data.frame(lapply(ev_numeric, as.numeric))
+sf_numeric <- as.data.frame(lapply(sf_numeric, as.numeric))
+```
+
+Now that we have changed the datatype, we can impute the NA's.
+
+```{r Impute data}
+# For EV
+ev_imputed <- as.data.frame(lapply(ev_numeric, function(x) {
+  ifelse(is.na(x), mean(x, na.rm=TRUE), x)
+}))
+
+# For SF
+sf_imputed <- as.data.frame(lapply(sf_numeric, function(x) {
+  ifelse(is.na(x), mean(x, na.rm=TRUE), x)
+}))
+```
+
+```{r Adding rownames}
+
+rownames(ev_imputed) <- unique_genes
+rownames(sf_imputed) <- unique_genes
+```
+
+We are now going to do a Log2-transformation because the data is usually very skewed (large spread and not normally distributed). Log2 helps normalize the data and makes PCA more reliable.
+
+```{r Log2}
+pseudo_count <- 1
+ev_log2 <- log2(ev_imputed + pseudo_count)
+sf_log2 <- log2(sf_imputed + pseudo_count)
+```
+
+```{r Filter on the same genes}
+common_genes <- intersect(rownames(ev_log2), rownames(sf_log2))
+ev_log2_common <- ev_log2[common_genes, ]
+sf_log2_common <- sf_log2[common_genes, ]
+```
+
+```{r Combine subsets}
+combined_log2 <- cbind(ev_log2_common, sf_log2_common)
+```
+
+```{r Transpose}
+pca_result <- prcomp(t(combined_log2), scale. = TRUE)
+```
+
+```{r Plot oud}
+# Df fot plot
+pca_df <- data.frame(pca_result$x)
+pca_df$Sample <- rownames(pca_df)
+
+# Label sample type
+pca_df$Group <- ifelse(grepl("_EV", pca_df$Sample), "EV", "SF")
+
+# Plot
+library(ggplot2)
+ggplot(pca_df, aes(x = PC1, y = PC2, color = Group)) +
+  geom_point(size = 3) +
+  theme_minimal() +
+  labs(title = "PCA EV & SF samples global")
+```
+This PCA plot only depicts the difference between EV and SF but not the difference within the groups itself.
+
+```{r Plot}
+library(ggplot2)
+
+# Df with PCA score and annotation
+pca_df <- data.frame(pca_result$x)
+pca_df$Sample <- rownames(pca_df)
+
+# Add column with group
+pca_df$Group <- ifelse(grepl("_EV", pca_df$Sample), "EV", "SF")
+pca_df$Subject <- ifelse(grepl("36", pca_df$Sample), "36", "42")
+
+# Plot
+ggplot(pca_df, aes(x=PC1, y=PC2, color=Group, shape=Subject)) +
+  geom_point(size=4) +
+  theme_minimal() +
+  labs(title="PCA EV & SF samples",
+       x=paste0("PC1 (", round(summary(pca_result)$importance[2,1]*100,1), "%)"),
+       y=paste0("PC2 (", round(summary(pca_result)$importance[2,2]*100,1), "%)"))
+```
+
+This PCA plot depicts the PCA scores of the data. Although there is nothing standing out from this plot, the difference between 36_EV and 42_EV is quite big. 
+
+## Pathway analysis
+Naar engels vertalen
+Waarom doe ik dit?
+Tool: clusterProfiler
+1. Genen omzetten naar standaard ID, met clusterProfiler of biomaRt 
+2. Pathway database is KEGG
+3. pathway-enrichment analyse uitvoeren (eigen genenlijst met pathways in database uitvoeren om te zien welke pathways meer genen bevatten dan verwacht) met Fisher
+4. visualisatie en interpretatie
+```{r ClusterProfiler download}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("clusterProfiler")
+BiocManager::install("org.Hs.eg.db")
+BiocManager::install("ReactomePA")
+```
+Now that we have started with the pathway analysis of the proteins, the first step we have to make is to transpose the names of the proteins to the standard ID.
+
+Let's make a list of the proteins we have in this dataset:
+
+```{r List of unique proteins}
+# Unique proteins
+unique_proteins <- make.unique(data_proteomics$PG.ProteinGroups)
+
+# Make a list
+protein_list <- unique_proteins
+```
+
+```{r List of genes}
+# Get all genes
+all_genes <- data_proteomics$PG.Genes
+
+# Split genes which are in same row
+genes_vector <- unlist(strsplit(all_genes, split = ";"))
+
+# Get the unique genes
+unique_genes <- unique(genes_vector)
+```
+
+
+```{r Install orgs.Hs.eg.db}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("org.Hs.eg.db")
+```
+
+```{r Translate gene to Entrez ID}
+gene_symbols <- unique_genes
+
+# Translate to Entrez ID
+entrez_ids <- bitr(gene_symbols, fromType = "SYMBOL",
+                   toType = "ENTREZID",
+                   OrgDb = org.Hs.eg.db)
+
+# Look at the translation
+head(entrez_ids)
+```
+
+```{r Vector with ENTREZ ID}
+# Make vector
+entrez_ids <- gene_table$ENTREZID'
+# Make datatype numerical
+entrez_ids <- na.omit(as.numeric(entrez_ids))
+```
+
+```{r KEGG Pathway analysis}
+# KEGG pathway analysis
+kegg_results <- enrichKEGG(gene = entrez_ids,
+                           organism = "hsa",
+                           pvalueCutoff = 0.05)
+
+# Results
+head(kegg_results)
+
+# Visualisation
+barplot(kegg_results, showCategory=10)
+dotplot(kegg_results, showCategory=10)
+```

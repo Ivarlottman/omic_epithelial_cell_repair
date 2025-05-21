@@ -4,4 +4,207 @@ output: html_document
 date: "2025-04-23"
 ---
 
-ivar
+# Introductie
+
+## Original Research
+Fibroblast-derived osteoglycin promotes epithelial cell repair.
+van der Koog L, Woest ME, Gorter IC, Verschut V, Elferink RAB, Zuidhof AB, Nugraha DF,
+Koloko Ngassie ML, Bos SIT, Dhakad D, Wolters JC, Horvatovich PL, Prakash YS, Timens W,
+Yildirim ÖA, Brandsma CA, Frijlink HW, Nagelkerke A, Gosens R. NPJ Regen Med. 2025 Mar
+25;10(1):16. doi: 10.1038/s41536-025-00404-3.
+PMID: 40133363. https://doi.org/10.1038/s41536-025-00404-3
+
+## library
+```{r}
+# transcriptomics
+library("tidyr")
+library("dplyr")
+library("ggplot2")
+library("BiocManager")
+library("DESeq2")
+library("apeglm")
+library("EnhancedVolcano")
+library("Biobase")
+library("BiocGenerics")
+library("S4Vectors")
+```
+
+### reading
+23-4-2025
+
+
+### Reading in the data
+
+```{r}
+transcript_data <- read.csv("../data/GSE271272_rawcounts.csv")
+head(transcript_data)
+```
+
+```{r}
+protomic_data <- readxl::read_excel("../data/2021-36_2021-42_SN16withHELAlib_MS2Quant_Qclassic_LocalNorm_NoImp.xlsx")
+head(protomic_data)
+```
+In the first row you can see that the amount of proteins cought in the mass spec differs per sample widh could impact the outcome becouse the SF group seems to have more 
+
+https://www.youtube.com/watch?v=JPpKL1uzE0I 10 min timestamp
+
+why most publisted researchers are false by john
+partialy squired discrimant analyse voor 1 en beide datasets
+svd
+fisher exact test
+
+Uitleg en doel PLSDA
+als doel feature selection?
+visualisatie patronen die het meest relevant zijn in een groep 
+
+Uitleg en doel SVD
+
+
+Cant use gene id's as rownames becouse it contains dubplicates
+```{r}
+proteomic_EV <- data.frame(as.integer(protomic_data$`2021-36_EV1`), as.integer(protomic_data$`2021-42_EV1`), as.integer(protomic_data$`2021-42_EV2`), as.integer(protomic_data$`2021-42_EV3`), as.integer(protomic_data$`2021-42_EV4`))
+
+colnames(proteomic_EV) <- c("36_EV1","42_EV1","42_EV2","42_EV3","42_EV4")
+
+proteomic_EV$EV_na_count <- apply(is.na(proteomic_EV), 1, sum)
+
+head(proteomic_EV)
+```
+
+```{r}
+proteomic_SF <- data.frame(as.integer(protomic_data$`2021-36_SF1`), as.integer(protomic_data$`2021-36_SF2`), as.integer(protomic_data$`2021-36_SF3`), as.integer( protomic_data$`2021-42_SF1`),as.integer(protomic_data$`2021-42_SF2`))
+group_2 <- c("36_SF1","36_SF2","36_SF3","42_SF1","42_SF2")
+colnames(proteomic_SF) <- group_2
+
+proteomic_SF$SF_na_count <- apply(is.na(proteomic_SF), 1, sum)
+
+head(proteomic_SF)
+```
+
+
+```{r}
+new_frame <- data.frame(protomic_data$PG.ProteinGroups, protomic_data$PG.Genes, proteomic_EV, proteomic_SF)
+#head(new_frame)
+#length(unique(test$protomic_data.PG.Genes))
+#length(test$protomic_data.PG.Genes)
+#dublist <- duplicated(test$protomic_data.PG.Genes)
+#which(dublist)
+new_frame[923,2] <- "TMPO_ISO"
+row.names(new_frame) <- new_frame$protomic_data.PG.Genes
+# new_frame[923,]
+new_frame <- new_frame[-1,]
+prot_frame <- subset(new_frame, SF_na_count < 3)
+prot_frame <- subset(prot_frame, EV_na_count < 3)
+prot_frame <- prot_frame[,-1]
+prot_frame <- prot_frame[,-1]
+prot_frame <- prot_frame[,-6]
+prot_frame <- prot_frame[,-11]
+head(prot_frame)
+```
+
+imputatie based on mean
+
+```{r}
+pre_imp_ev <- prot_frame[,1:5]
+pre_imp_ev$gene <- row.names(prot_frame)
+#head(pre_imp_ev)
+imp_ev <- pre_imp_ev %>%
+  mutate(rowMean = as.integer(rowMeans(select(., -gene), na.rm = T)),
+         across(starts_with("X"),
+                ~ coalesce(., rowMean))) %>%
+  select(-rowMean)
+
+#sf
+pre_imp_sf <- prot_frame[,6:10]
+pre_imp_sf$gene <- rownames(prot_frame)
+imp_sf <- pre_imp_sf %>%
+  mutate(rowMean = as.integer(rowMeans(select(., -gene), na.rm = T)),
+         across(starts_with("X"),
+                ~ coalesce(., rowMean))) %>%
+  select(-rowMean)
+imp_ev <- imp_ev[,-6]
+imp_sf <- imp_sf[,-6]
+imputed_prot <- data.frame(imp_ev, imp_sf)
+#rownames(imputed_prot) <- row.names(prot_frame)
+head(imputed_prot)
+#imputed_prot
+```
+
+
+meta data
+```{r}
+meta_data <- data_frame(sample = c("X36_EV1","X42_EV1","X42_EV2","X42_EV3","X42_EV4","X36_SF1","X36_SF2","X36_SF3","X42_SF1","X42_SF2"),
+                        group = c("EV","EV","EV","EV","EV","SF","SF","SF","SF","SF")
+                        )
+meta_data
+```
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = imputed_prot,
+                              colData = meta_data,
+                              design = ~ group)
+dds
+```
+
+```{r}
+deseq <- DESeq(dds)
+results(deseq)
+```
+
+```{r}
+resultaat_deseq <- results(deseq, contrast = c("group", "EV","SF"))
+resultaat_deseq
+```
+
+
+```{r}
+deseq_shrink <- lfcShrink(deseq, coef = "group_SF_vs_EV", type = "apeglm")
+deseq_shrink
+```
+
+```{r}
+resultaat_p_01<- sum(resultaat_deseq$padj < 0.05, na.rm=TRUE)
+resultaat_p_01
+```
+
+```{r}
+deseq_05 <- results(deseq, alpha=0.05)
+summary(deseq_05)
+```
+
+
+```{r}
+plotMA(resultaat_deseq, ylim=c(-10,10))
+```
+
+```{r}
+plotMA(deseq_shrink, ylim=c(-10,10))
+```
+
+
+```{r}
+EnhancedVolcano(deseq_shrink, x="log2FoldChange", y = "padj",lab = rownames(deseq_shrink), title = "young versus old", pCutoff = 0.05,FCcutoff = 2, ylim = c(0,50),legendPosition = "none",subtitle = "FDR <= 0.05 and absolute FC >= 2")
+```
+
+error
+```{r}
+vsd <- vst(dds, blind = FALSE)
+head(assay(vsd))
+```
+error
+```{r}
+plotPCA(vsd, intgroup="group", ntop = 500)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

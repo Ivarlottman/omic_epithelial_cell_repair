@@ -2,6 +2,7 @@
 title: "Logboek Mirte"
 author: "Mirte Draaijer"
 date: "`r Sys.Date()`"
+bibliography: "logfile_mirte.bib"
 output:
   html_document:
     toc: yes
@@ -199,25 +200,31 @@ This will be our initial approach for the project, ofcourse if we run into new i
 
 # DESeq:
 
+## Proteomics:
+
+Ivar is going to use DESeq for analysis of the proteomics data.
+
+## Transcriptomics:
+
 **12-5-2025:**
 
 During a meeting with my group we discussed that I will work on DESeq for differential gene expression. Karin still needs to get back to us about which sample is which. But I can start on writing code for implementing DESeq and I can test on data I still have from an old project. 
 
-## Background info:
+### Background info:
 
 **12-5-2025:**
 
 DESeq2 is used for detecting differentially expressed genes from count data.  The package DESeq2 provides methods to test for differential expression by use of negative binomial generalized linear models. 
 
-BRON nog goed zetten: https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html
+[@love-2014]
 
-## Implementing:
+### Implementing:
 
 **12-5-2025:**
 
 Karin still needs to get back to us on which sample is which, for now I will implement DESeq to use all samples, but I can change this later on if we're not going to use all samples. If I have working code changing it to use the correct groups will be easy.
 
-### Step 1 loading the data:
+#### Step 1 loading the data:
 
 ```{r}
 rna_seq_data <- read.csv(
@@ -232,7 +239,7 @@ When taking a look at the first few lines of the RNA sequencing data I'm seeing 
 - The following columns are named in the following way: starting with M1, M2, or M3. Followed by ctrl, EVs, SFs, or OGN. Followed by Epcam or CCL. When taking a  look at the article I found that SF stand for soluble factors, EV stands for extracellular vesicles, OGN stands for osteoglycin. I think M1, M2, and M3 indicate the duplicates. I think Epcam and CCL indicate which cell type was used.
 - Each column except the first contains a number, I think this number is a count representing how many reads of the gene were found in the sample.
 
-### Step 2 constructing DESeq dataset:
+#### Step 2 constructing DESeq dataset:
 
 To construct the DESeq dataset, the original data needs to be reconstructed. 
 
@@ -287,7 +294,7 @@ The other teacher said it might be a problem with DESeq, so he suggested to try 
 
 Today I deleted my installation of DESeq2 and reinstalled it, this suggestion was made by the teacher who helped me sort of fix the issue with DESeq2. Deleting and reinstalling DESeq2 made it work again.
 
-### Step 3 generating summary:
+#### Step 3 generating summary:
 
 As a first step to analyse the data I will create a summary for each group combination:
 
@@ -333,7 +340,7 @@ When looking at the results of the summary extracellular vs soluble the followin
 
 Over all it stands out that there is quite a big portion of low counts varying from 43% (control vs extracellular) to 48% (extracellular vs soluble).
 
-### Step 4 PCA:
+#### Step 4 PCA:
 
 **14-5-2025:**
 
@@ -367,7 +374,7 @@ Most of the variance is shown on PC1 (73%), when looking at the plot this makes 
 
 When comparing it to the PCA Jasper preformed there are differences. I Discussed this with my teacher, and this is most likely caused by how DESeq works. An interesting thing to further explore is preforming PCA for each cell type individually. 
 
-#### Comparison to original PCA:
+##### Comparison to original PCA:
 
 **15-5-2025:**
 
@@ -401,11 +408,11 @@ When looking at the new PCA I can see that it is almost identical to the one fro
 Besides comparing my PCA to the original it is important to interpret it as well. PC1 explains 95% of the variance, this seems to be caused by the different cell types (CCL and epcam). PC2 explains 2% of the variance. When looking at the plot there is some clustering of the different groups but some are hard to distinguish, mainly the soluble factors and the extracellular vesicles. 
 Since so much of the variance is caused by the different cell types, it would be interesting to look at the two cell types separately.
 
-# DESeq proteomics:
-
-Ivar is going to use DESeq for analysis of the proteomics data.
-
 # Volcano plots:
+
+## Proteomics:
+
+Ivar is going to make volcano plots for the proteomics data.
 
 ## Transcriptomics:
 
@@ -463,19 +470,84 @@ Interpretation control vs. soluble factors:
 
 I think it would be useful to look more into the following genes for our project: Saa3, Lcn2, and Slpi. For further analysis we will preform pathway analysis as well.
 
+# Pathway analysis:
+
 ## Proteomics:
 
-Ivar is going to make volcano plots for the proteomics data.
-
-# Pathway analysis:
+Kasthury is going to preform pathway analysis for the proteomics.
 
 ## Transcriptomics:
 
 Jasper is going to preform pathway analysis for the transcriptomics data.
 
-## Proteomics:
+# PLS-DA:
 
-Kasthury is going to preform pathway analysis for the proteomics.
+For finding the connections between the two datasets we will be preforming PLS-DA. As a first step I will look up some more information about PLS-DA, what is it? How can we use it?
+
+## Gathering information:
+
+**19-5-2025:**
+
+PLS-DA was recommended to us by our teacher for this project. I will look up some more information about it, so that we can use it in our project.
+Partial least squares-discriminant analysis (PLS-DA) is a versatile algorithm that can be used for predictive and descriptive modellings as well for discriminative variable selection.
+
+[@lee-2018]
+
+PLS-DA is often used for identifying biomarkers, distinguishing between physiological states, and predicting class membership for new samples based on their metabolite profiles.
+
+[@metabolon-inc-2025]
+
+Since our research question is: _Which proteins are significantly expressed in the EVs and SFs and does that influence the transcriptome of the control group?_ PLS-DA will be a good contestant for analyzing the data. Tomorrow We will ask our teacher for some more help on implementing PLS-DA.
+
+As a group we talked about implementing PLS-DA, for the information we have now on PLS-DA this is how we want to preform it: 
+
+- PLS-DA individually on transcriptomics data and individually on proteomics data.
+- PLS-DA across the two datasets.
+
+The individual implementation is something we can already start working on, PLS-DA across the two datasets is something we need to gather some more information on we will do this by asking our teacher.
+
+## Implementing:
+
+**20-5-2025:**
+
+PLSDA NOG INTERPRETEREN ENZO!
+
+Today I am going to start working on implementing the PLS-DA, for this I will ask my teacher for help because I have already searched some information but I am having a hard time figuring it out myself. After getting some help from my teacher I have a workings PLSDA.
+
+The first step is obtaining the group names.
+```{r}
+# Extracting the different groups:
+group <- rownames(plsda_data)
+group2 <- gsub('M[1,2,3,4]_','',group)
+group2 <- c(group2[-1])
+group2
+```
+After obtaining the group names, I can make the PLS-DA model.
+```{r}
+model <- mdatools::plsda(x = t(rna_seq_data[,-1]), c = group2, cv = 1)
+```
+
+Now that I have the model there are some functions I can use to look at the results and interpret them.
+```{r}
+summary(model)
+```
+
+```{r}
+plot(model)
+```
+VOOR DE PLOTS ENZO NOG EVEN KIJKEN HOE DIT PRECIES ZIT.
+
+```{r}
+mdatools::getConfusionMatrix(model$calres)
+```
+Kijkend naar de confusion matrix lijkt er nog iets fout te gaan?
+
+# VSD:
+
+
+
+
+
 
 
 
@@ -530,3 +602,5 @@ Now that I've looked at the first few lines it's important to compare the two fi
 When looking at both the files it is hard to see which line in the proteomics data belongs to which line in the RNA sequencing data, because the samples do not have the same name. Another problem is the fact that the RNA sequencing data seems to have more samples. This is a problem, I think we need to discuss with our teachers.
 
 # Comfirmatory data analysis
+
+# Resources:
