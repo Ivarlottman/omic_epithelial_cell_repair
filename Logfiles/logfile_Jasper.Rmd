@@ -27,7 +27,7 @@ BiocManager::install("org.Mm.eg.db")
 ```
 
 After this we read the library in:
-```{r,message=FALSE, warning=FALSE}
+```{r, echo=FALSE}
 library(fgsea)
 library(pathview)
 library(data.table)
@@ -38,6 +38,7 @@ library(msigdbr)
 library(dplyr)
 library(ggfortify)
 library(org.Mm.eg.db)
+library(org.Hs.eg.db)
 ```
 
 
@@ -55,7 +56,7 @@ fgseaRes <- fgsea(pathways = examplePathways,
                   stats    = exampleRanks,
                   minSize  = 15,
                   maxSize  = 500)
-as.data.frame(fgseaRes)
+
 ```
 
 ```{r, message=FALSE, warning=FALSE}
@@ -65,7 +66,7 @@ fgseaRes <- fgsea(pathways = examplePathways,
                   minSize  = 15,
                   maxSize  = 500)
 
-head(as.data.frame(fgseaRes[order(pval), ]))
+
 ```
 
 
@@ -247,23 +248,26 @@ extracellular_vs_soluble <- results(dds, contrast = c("group", "extracellular_ve
 
 Na dat alles kan ik verder. 
 
+
 ```{r, message=FALSE, warning=FALSE}
 gene_ranks_crl_extra <- control_vs_extracellular$stat
 names(gene_ranks_crl_extra) <- rownames(control_vs_extracellular)
-gene_ranks_crl_extra <- sort(gene_ranks_crl_extra, decreasing = TRUE)
+gene_ranks_crl_extra <- sort(gene_ranks_crl_extra, decreasing = T)
 ```
 
 ```{r, message=FALSE, warning=FALSE}
 gene_ranks_crl_sol <- control_vs_soluble$stat
 names(gene_ranks_crl_sol) <- rownames(control_vs_soluble)
-gene_ranks_crl_sol <- sort(gene_ranks_crl_sol, decreasing = TRUE)
+gene_ranks_crl_sol <- sort(gene_ranks_crl_sol, decreasing = T)
 ```
 
 ```{r, message=FALSE, warning=FALSE}
 gene_ranks_extra_sol <- extracellular_vs_soluble$stat
 names(gene_ranks_extra_sol) <- rownames(extracellular_vs_soluble)
-gene_ranks_extra_sol <- sort(gene_ranks_extra_sol, decreasing = TRUE)
+gene_ranks_extra_sol <- sort(gene_ranks_extra_sol, decreasing = T)
 ```
+
+# Mens
 
 
 ```{r, message=FALSE, warning=FALSE}
@@ -282,23 +286,26 @@ df_mapped <- df_genes %>%
   filter(!is.na(ENTREZID))
 
 
-geneList <- df_mapped$stat
-names(geneList) <- df_mapped$ENTREZID
-```
-```{r, message=FALSE, warning=FALSE}
-geneList_kegg <- df_mapped$stat
-names(geneList_kegg) <- df_mapped$ENTREZID
+geneList_1 <- df_mapped$stat
+names(geneList_1) <- df_mapped$ENTREZID
+
 
 ```
+
 
 ```{r, message=FALSE, warning=FALSE}
 gsea_kegg <- gseKEGG(
-  geneList = geneList_kegg,
+  geneList = geneList_1,
   organism = "mmu",
   pvalueCutoff = 0.05
 )
 
 ```
+
+```{r}
+head(gsea_kegg)
+```
+
 ```{r}
 dotplot(gsea_kegg, showCategory=5, split=".sign") + facet_grid(.~.sign) + theme(axis.text.y = element_text(size = 9))+ labs(title = 'control vs extracellular')
 ```
@@ -345,7 +352,7 @@ gsea_kegg@result[gsea_kegg@result$Description %in% terms, ]
 setwd("imgs_trans/control_vs_extracellular")
 # KEGG: Oxidative phosphorylation (mmu00190)
 pathview(
-  gene.data = geneList_kegg,
+  gene.data = geneList_1,
   pathway.id = "mmu00190",
   species = "mmu",
   kegg.native = TRUE,
@@ -354,7 +361,7 @@ pathview(
 
 # KEGG: Purine metabolism (mmu00562)
 pathview(
-  gene.data = geneList_kegg,
+  gene.data = geneList_1,
   pathway.id = "mmu00562",
   species = "mmu",
   kegg.native = TRUE,
@@ -363,7 +370,7 @@ pathview(
 
 # KEGG: Ribosome (mmu03010)
 pathview(
-  gene.data = geneList_kegg,
+  gene.data = geneList_1,
   pathway.id = "mmu03010",
   species = "mmu",
   kegg.native = TRUE,
@@ -372,7 +379,7 @@ pathview(
 
 # KEGG: signaling (mmu03010)
 pathview(
-  gene.data = geneList_kegg,
+  gene.data = geneList_1,
   pathway.id = "mmu04070",
   species = "mmu",
   kegg.native = TRUE,
@@ -404,7 +411,6 @@ Dit wijst op een duidelijke stimulatie van eiwitsynthese, waarschijnlijk om cell
 Deze pathway toont een complex regulatiepatroon: enkele sleutelenzymen zoals 2.7.8.11 en CALM zijn geactiveerd, terwijl veel PI3K-gerelateerde enzymen (zoals PIK3C2, PLC, PTEN) onderdrukt zijn.
 Dit suggereert gerichte modulatie van intracellulaire signaalroutes, met een mogelijke verschuiving in balans tussen activatie en remming van het PI3K-Akt pad. EV's kunnen zo fijnmazig signaaltransductie beïnvloeden.
 
-
 ```{r, message=FALSE, warning=FALSE}
 df_genes_2 <- data.frame(
   symbol = names(gene_ranks_crl_sol),
@@ -421,17 +427,24 @@ df_mapped_2 <- df_genes_2 %>%
   filter(!is.na(ENTREZID))
 
 
-geneList_2 <- df_mapped_2$stat
-names(geneList_2) <- df_mapped_2$ENTREZID
+sol_gen <- df_mapped_2$stat
+names(sol_gen) <- df_mapped_2$ENTREZID
+
+
 ```
 
 
 ```{r}
 gsea_kegg_2 <- gseKEGG(
-  geneList = geneList_2,
+  geneList = sol_gen,
   organism = "mmu",
-  pvalueCutoff = 0.05
+  pvalueCutoff = 0.05,
+  seed= 1
 )
+```
+
+```{r}
+head(gsea_kegg_2)
 ```
 
 
@@ -526,6 +539,8 @@ gsea_kegg_3 <- gseKEGG(
   pvalueCutoff = 0.05
 )
 ```
+
+
 
 ```{r}
 dotplot(gsea_kegg_3, showCategory=5, split=".sign") + facet_grid(.~.sign) + theme(axis.text.y = element_text(size = 9)) + labs(title = 'Extracellular vs soluble')
@@ -622,3 +637,64 @@ De figuur laat duidelijke activatie zien van mitochondriale genen verspreid over
 Inositol phosphate metabolism
 
 In deze pathway zijn meerdere enzymen actief betrokken bij de afbraak en omzetting van inositolfosfaten zichtbaar geactiveerd. Dit suggereert versterkte signaaloverdracht via second messengers, mogelijk als gevolg van EV-gerelateerde stimulatie van celinterne communicatie.
+
+# Muis 
+
+```{r, message=FALSE, warning=FALSE}
+df_genes_mens <- data.frame(
+  symbol = names(gene_ranks_crl_extra),
+  stat = gene_ranks_crl_extra
+)
+df_mapped_mens <- df_genes %>%
+  left_join(
+    AnnotationDbi::select(org.Hs.eg.db,
+                          keys = df_genes$symbol,
+                          columns = c("ENTREZID", "SYMBOL"),
+                          keytype = "SYMBOL"),
+    by = c("symbol" = "SYMBOL")
+  ) %>%
+  filter(!is.na(ENTREZID))
+
+
+geneList_Mens <- df_mapped_mens$stat
+names(geneList_Mens) <- df_mapped_mens$ENTREZID
+
+```
+
+
+# Coronavirus
+
+```{r}
+term <- c(
+  "Coronavirus disease - COVID-19 - Mus musculus (house mouse)")
+gsea_kegg@result[gsea_kegg@result$Description %in% term, ]
+```
+
+```{r}
+setwd("imgs_trans/corona")
+pathview(
+  gene.data = geneList_1,
+  pathway.id = "mmu05171",
+  species = "mmu",
+  out.suffix = "Corno_1"
+)
+
+pathview(
+  gene.data = sol_gen,
+  pathway.id = "mmu05171",
+  species = "mmu",
+  out.suffix = "Corno_2"
+)
+
+pathview(
+  gene.data = geneList_3,
+  pathway.id = "mmu05171",
+  species = "mmu",
+  out.suffix = "Corno_3"
+)
+```
+
+![Corona in crt vs evs](imgs_trans/corona/mmu05171.Corno_1.png)
+![Corona in crt vs sfs](imgs_trans/corona/mmu05171.Corno_2.png)
+
+![Corona in sfs vs evs](imgs_trans/corona/mmu05171.Corno_3.png)
