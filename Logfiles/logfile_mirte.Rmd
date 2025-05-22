@@ -383,7 +383,7 @@ Yesterday both Jasper and I preformed PCA, we had different results. So I decide
 In figure 1b you can see the PCA preformed in the article from which we are using the data. Yesterday I worked on preforming PCA, I got a simmiliar result. I decided not to use this result because it did not use all genes and used as variance stabilizing normalization, and I used a log2 transformation. However Since they used this in the original article, I am going to preform PCA this way as well.
 
 ```{r, echo=FALSE, fig.cap="Figure 1: An image containing 11 different plots about transcriptomics. The image was taken from the original article.", out.width="75%", fig.pos="H"}
-    knitr::include_graphics("imgs/transcriptomics_original.png")
+    knitr::include_graphics("transcriptomics_original.png")
 ```
 
 Below you can see the new PCA preformed in (presumably) the same way as in the article. 
@@ -508,42 +508,57 @@ The individual implementation is something we can already start working on, PLS-
 
 ## Implementing:
 
-**20-5-2025:**
-
-PLSDA NOG INTERPRETEREN ENZO!
+**20-5-2025 & 21-5-2025:**
 
 Today I am going to start working on implementing the PLS-DA, for this I will ask my teacher for help because I have already searched some information but I am having a hard time figuring it out myself. After getting some help from my teacher I have a workings PLSDA.
 
 The first step is obtaining the group names.
+
 ```{r}
 # Extracting the different groups:
-group <- rownames(plsda_data)
+group <- colnames(rna_seq_data)
 group2 <- gsub('M[1,2,3,4]_','',group)
 group2 <- c(group2[-1])
+group2 <- factor(group2)
 group2
 ```
 After obtaining the group names, I can make the PLS-DA model.
+
 ```{r}
-model <- mdatools::plsda(x = t(rna_seq_data[,-1]), c = group2, cv = 1)
+model <- mdatools::plsda(x = t(rna_seq_data[,-1]), c = group2, ncomp = 4, scale = TRUE, cv = 1)
 ```
 
 Now that I have the model there are some functions I can use to look at the results and interpret them.
-```{r}
-summary(model)
-```
+First of all the summary. The summary shows:
+
+- X- and Y- cumalative variance.
+- The amount of true positives.
+- The amount of false positives.
+- The amount of true negatives.
+- The amount of false negatives.
+- The specifity.
+- The sensitivity.
+- The accuracy.
+
+It shows this for the calibration and the cross validation.
 
 ```{r}
-plot(model)
+summary(model, ncomp = 4)
 ```
-VOOR DE PLOTS ENZO NOG EVEN KIJKEN HOE DIT PRECIES ZIT.
+
+Besides the summary I can generate a confusion matrix as well. The confusion matrix shows as which class everything was classified. Something remarkable is the fact that most of the samples were classed as ```None```. All of the ```ctrl_CCL``` was classed correctly, 3 of the ```EVs_CCL``` were classed correctly, and 3 of the ```OGN_CCL``` were classed correctly. So only samples from the CCL cell line were classed correctly, none of the samples from the Epcam were classed correctly.
 
 ```{r}
-mdatools::getConfusionMatrix(model$calres)
+mdatools::getConfusionMatrix(model$calres, ncomp = 4)
 ```
-Kijkend naar de confusion matrix lijkt er nog iets fout te gaan?
+Another way to show the results is plotting the predictions this is similiar to the confusion matrix.
+
+```{r}
+mdatools::plotPredictions(model, ncomp=4)
+```
+
 
 # VSD:
-
 
 
 
