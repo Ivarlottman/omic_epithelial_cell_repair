@@ -2,7 +2,13 @@
 title: "Logbook_Jasper"
 author: "Jasper Jonker"
 date: "2025-04-23"
-output: html_document
+output: 
+  html_document:
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
 ---
 For our school project were are gone do an research like 
 (Fibroblast-derived osteoglycin promotes epithelial cell repair)[https://pmc.ncbi.nlm.nih.gov/articles/PMC11937367/].
@@ -27,7 +33,7 @@ BiocManager::install("org.Mm.eg.db")
 ```
 
 After this we read the library in:
-```{r, echo=FALSE}
+```{r, message=FALSE, warning=FALSE}
 library(fgsea)
 library(pathview)
 library(data.table)
@@ -39,6 +45,7 @@ library(dplyr)
 library(ggfortify)
 library(org.Mm.eg.db)
 library(org.Hs.eg.db)
+library("vsn")
 ```
 
 
@@ -676,25 +683,79 @@ pathview(
   gene.data = geneList_1,
   pathway.id = "mmu05171",
   species = "mmu",
-  out.suffix = "Corno_1"
+  out.suffix = "Corno_1",
+  low=list(gene="magenta"),
+  high = list(gene="green")
 )
 
 pathview(
   gene.data = sol_gen,
   pathway.id = "mmu05171",
   species = "mmu",
-  out.suffix = "Corno_2"
+  out.suffix = "Corno_2",
+  low=list(gene="magenta"),
+  high = list(gene="green")
 )
 
 pathview(
   gene.data = geneList_3,
   pathway.id = "mmu05171",
   species = "mmu",
-  out.suffix = "Corno_3"
+  out.suffix = "Corno_3",
+  low=list(gene="magenta"),
+  high = list(gene="green")
 )
 ```
 
 ![Corona in crt vs evs](imgs_trans/corona/mmu05171.Corno_1.png)
+
+Conclusie (Control vs. Extracellular Vesicles)
+
+De KEGG pathway-analyse laat zien dat behandeling met extracellular vesicles (EVs) resulteert in een duidelijke toename van ontstekings- en immuunactiviteit ten opzichte van de controlegroep. Verschillende ontstekingsgenen zoals IL6, TNF, CXCL10, IL1B en CCL2 zijn sterk upgereguleerd, wat duidt op een geactiveerde immuunrespons. Ook componenten van het complementsysteem (C3, C5AR1, F3) en pathways betrokken bij celdood en stolling zijn meer actief.
+
+Daarnaast zijn ook enkele antivirale genen zoals OAS1, MX1 en IFITM1 verhoogd tot expressie gekomen, wat wijst op een versterkte antivirale verdediging door EV-behandeling.
+
+Deze resultaten suggereren dat EV’s een sterke immuunstimulerende werking hebben: ze activeren zowel ontstekings- als antivirale routes. Dit kan nuttig zijn in situaties waarin een immuunreactie gewenst is, maar kan ook gepaard gaan met risico op overmatige ontsteking als dit niet goed gereguleerd wordt.
+
+
 ![Corona in crt vs sfs](imgs_trans/corona/mmu05171.Corno_2.png)
 
+Conclusie
+
+In vergelijking met de controlegroep veroorzaken de Soluble Factors een duidelijke toename van ontstekingsactiviteit, vooral via genen zoals IL6, CXCL10 en TNF, die sterk upgereguleerd zijn. Dit wijst op een versterkte immuunreactie.
+
+Tegelijkertijd zijn belangrijke antivirale genen, zoals OAS1, MX1 en IFIT1, juist gedowngereguleerd, wat erop wijst dat de afweer tegen virussen mogelijk wordt onderdrukt.
+
+Ook valt op dat genen betrokken bij complementactivatie en stolling, zoals C3, FGA en FGB, meer actief zijn, wat kan leiden tot weefselschade en ontstekingsproblemen.
+
+Kortom, Soluble Factors zorgen voor een immuunrespons die uit balans is: de ontsteking wordt sterker, terwijl de bescherming tegen virussen en weefselschade afneemt. Dit kan bijdragen aan ziektemechanismen zoals die bij ernstige infecties worden gezien.
+
+
 ![Corona in sfs vs evs](imgs_trans/corona/mmu05171.Corno_3.png)
+
+
+Conclusie (Extracellular Vesicles vs. Soluble Factors)
+
+De KEGG pathway-analyse laat zien dat behandeling met extracellular vesicles (EVs) leidt tot minder activatie van ontstekingsgerelateerde genen dan behandeling met soluble factors (SFs). Genen zoals IL6, TNF en CXCL10 zijn minder tot expressie gebracht, wat duidt op een verzwakte ontstekingsreactie. Tegelijkertijd zijn meerdere antivirale genen, waaronder MX1, OAS1 en IFITM1, juist verhoogd tot expressie gekomen bij EVs, wat wijst op een verbeterde antivirale respons. Ook genen die betrokken zijn bij complementactivatie en stolling zijn minder actief bij EV-behandeling.
+
+Deze resultaten suggereren dat EVs een beschermende rol kunnen spelen door ontsteking te remmen, antivirale afweer te versterken en weefselschade te beperken, in tegenstelling tot de pro-inflammatoire effecten die worden gezien bij SF’s.
+
+
+
+# Vsd
+
+https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#variance-stabilizing-transformation
+
+```{r}
+vsd<- vst(dds, blind = F)
+ntd <- normTransform(dds)
+```
+
+```{r}
+meanSdPlot(assay(vsd))
+```
+
+```{r}
+meanSdPlot(assay(ntd))
+```
+
