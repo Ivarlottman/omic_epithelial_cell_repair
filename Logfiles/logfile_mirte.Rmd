@@ -27,6 +27,8 @@ library("readxl")
 library("DESeq2")
 library("S4Vectors")
 library("EnhancedVolcano")
+library("paletteer")
+library("viridis")
 ```
 
 
@@ -40,7 +42,7 @@ The data we will be using can be downloaded through the following links:
 
 The corresponding article can be found [here](https://www.nature.com/articles/s41536-025-00404-3).
 
-The question we want to answer during this project is: _Which proteins are significantly expressed in the EVs and SFs and does that influence the transcriptome of the control group?_ 
+The question we want to answer during this project is:  _Which proteins are significantly expressed in the EVs and SFs and does that influence the transcriptome of the control group?_
 
 # Gathering information:
 
@@ -383,7 +385,7 @@ Yesterday both Jasper and I preformed PCA, we had different results. So I decide
 In figure 1b you can see the PCA preformed in the article from which we are using the data. Yesterday I worked on preforming PCA, I got a simmiliar result. I decided not to use this result because it did not use all genes and used as variance stabilizing normalization, and I used a log2 transformation. However Since they used this in the original article, I am going to preform PCA this way as well.
 
 ```{r, echo=FALSE, fig.cap="Figure 1: An image containing 11 different plots about transcriptomics. The image was taken from the original article.", out.width="75%", fig.pos="H"}
-    knitr::include_graphics("transcriptomics_original.png")
+    knitr::include_graphics("imgs/transcriptomics_original.png")
 ```
 
 Below you can see the new PCA preformed in (presumably) the same way as in the article. 
@@ -395,7 +397,21 @@ plotPCA(vsd, intgroup = "group",
         pcsToUse = 1:2,
         ntop = 500) +
   aes(shape = type) +
-  scale_shape_manual(values = c("ccl" = 19, "epcam" = 17))
+  scale_shape_manual(values = c("ccl" = 19, "epcam" = 17),
+                     labels = c("ccl" = "CCL", "epcam" = "Epcam")) +
+  labs(colour = "Group:",
+       shape = "Cell type:") +
+  ggtitle("PCA of transcriptomics data") +
+  paletteer::scale_colour_paletteer_d("ggprism::colorblind_safe",
+                                      labels = c("control" = "Control",
+                                      "extracellular_vesicles" = "Extracellular vesicles",
+                                      "osteoglycin" = "Osteoglycin",
+                                      "soluble_factors" = "Soluble factors")) +
+  theme_classic() +
+  theme(panel.grid.major = element_line(colour = "lightgrey"),
+        legend.box.background = element_rect(color="grey", linewidth = 0.5),
+        legend.box.margin = margin(1, 1, 1, 1),
+        plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
 When looking at the new PCA I can see that it is almost identical to the one from the original article (figure 1b), however there are some differences:
@@ -407,6 +423,10 @@ When looking at the new PCA I can see that it is almost identical to the one fro
 
 Besides comparing my PCA to the original it is important to interpret it as well. PC1 explains 95% of the variance, this seems to be caused by the different cell types (CCL and epcam). PC2 explains 2% of the variance. When looking at the plot there is some clustering of the different groups but some are hard to distinguish, mainly the soluble factors and the extracellular vesicles. 
 Since so much of the variance is caused by the different cell types, it would be interesting to look at the two cell types separately.
+
+**22-5-2025:**
+
+Today we talked about which results we want to use in our paper, we decided we want to use this PCA plot. So today I am going to work a bit on making it prettier by adding a title, choosing a theme, choosing a color scheme etc.
 
 # Volcano plots:
 
@@ -508,9 +528,9 @@ The individual implementation is something we can already start working on, PLS-
 
 ## Implementing:
 
-**20-5-2025 & 21-5-2025:**
+**20-5-2025 & 21-5-2025 & 22-5-2025:**
 
-Today I am going to start working on implementing the PLS-DA, for this I will ask my teacher for help because I have already searched some information but I am having a hard time figuring it out myself. After getting some help from my teacher I have a workings PLSDA.
+Today I am going to start working on implementing the PLS-DA, for this I will ask my teacher for help because I have already searched some information but I am having a hard time figuring it out myself. After getting some help from my teacher I have a working PLSDA.
 
 The first step is obtaining the group names.
 
@@ -525,44 +545,164 @@ group2
 After obtaining the group names, I can make the PLS-DA model.
 
 ```{r}
-model <- mdatools::plsda(x = t(rna_seq_data[,-1]), c = group2, ncomp = 4, scale = TRUE, cv = 1)
+model <- mdatools::plsda(x = t(rna_seq_data[,-1]), c = group2, ncomp = 7, scale = TRUE, cv = 1)
 ```
 
 Now that I have the model there are some functions I can use to look at the results and interpret them.
 First of all the summary. The summary shows:
 
-- X- and Y- cumalative variance.
+- X- and Y- cumulative variance.
 - The amount of true positives.
 - The amount of false positives.
 - The amount of true negatives.
 - The amount of false negatives.
-- The specifity.
+- The specificity.
 - The sensitivity.
 - The accuracy.
 
 It shows this for the calibration and the cross validation.
 
 ```{r}
-summary(model, ncomp = 4)
+summary(model, ncomp = 7)
 ```
 
-Besides the summary I can generate a confusion matrix as well. The confusion matrix shows as which class everything was classified. Something remarkable is the fact that most of the samples were classed as ```None```. All of the ```ctrl_CCL``` was classed correctly, 3 of the ```EVs_CCL``` were classed correctly, and 3 of the ```OGN_CCL``` were classed correctly. So only samples from the CCL cell line were classed correctly, none of the samples from the Epcam were classed correctly.
+Besides the summary I can generate a confusion matrix as well. The confusion matrix shows as which class everything was classified. Interpretation confusion matrix:
+
+- All of the control CCl samples were classed correctly.
+- One of the control Epcam samples was classed correctly, the others were classed as `None`.
+- Three of the CCL EVs were classed correctly, one was classed as `None`.
+- Two of the Epcam EVs were classed correctly, the other two were classed as `None`.
+- Three of the CCL osteoglycin samples were classed correctly, the other was classed as `None`.
+- All of the Epcam osteoglycin samples were classed correctly.
+- None of the CCL SFs were classed correctly, all of them are classed as `None`.
+- Two of the Epcam SFs were classed correctly, the other two were classed as `None`.
 
 ```{r}
-mdatools::getConfusionMatrix(model$calres, ncomp = 4)
+mdatools::getConfusionMatrix(model$calres, ncomp = 7)
 ```
-Another way to show the results is plotting the predictions this is similiar to the confusion matrix.
+Looking at the confusion matrix I can see that the PLS-DA model classifies some of the samples correctly. The incorrectly classified samples are classified as `none`, this seems to be better than classifying them as the wrong class.
+
+Another way to show the results is plotting the predictions this is similar to the confusion matrix.
 
 ```{r}
-mdatools::plotPredictions(model, ncomp=4)
+op <- par(mar = c(5, 7, 4, 2) + 0.1) # Change plot margins
+
+# Generate plot:
+mdatools::plotPredictions(model, ncomp = 7, res = "cal", ylas =2, 
+                          main = "PLS-DA class predictions",
+                          colmap = c("#000000FF",
+                                     "#FF0066FF",
+                                     "#107F80FF",
+                                     "#40007FFF",
+                                     "#AA66FFFF",
+                                     "#66CCFEFF",
+                                     "#FFB000FF",
+                                     "#7F3C00FF"),
+                          lab.col = "black",
+                          lab.cex = 0.57)
+
+# Adding subtitle:
+mtext("Calibration results using 7 components", side = 3, line = 0.5, cex = 0.85, font = 3)
+
+par(op) # Reset plot margins to default
 ```
 
+This plot is approximately the same as the confusion matrix, just more visually appealing. All of the samples that were classified are classified correctly. The samples that were classified incorrectly are classified as `none`, I feel like this is better than classifying them as a different class.
 
-# VSD:
+**22-5-2025:**
 
+Today I asked my teacher for help interpreting the results from the PLS-DA because I do not fully understand how to use the results for our project. He explained it to me and now I understand it better. I will make some tweaks in my PLS-DA code and write my interpretation below the results.
+It's important to take overfitting into account, when using 7 components on such little groups this might look like overfitting but if the groups are truly seperated 7 components are needed to seperate the different groups.
 
+## Extracting the loadings:
 
+**22-5-2025:**
 
+After preforming the PLS-DA I can extract the loading from the analysis to determine which genes contributed the most to each component. 
+
+Save the gene names:
+
+```{r}
+gene_names <- rna_seq_data[,1]
+```
+
+Assign the gene names as row names to the loadings:
+
+```{r}
+rownames(model$xloadings) <- gene_names
+```
+
+Get the top 10 genes for each component and combine into a dataframe:
+
+```{r}
+# Extract the top 10 genes for each component
+top_genes <- lapply(1:7, function(comp) {
+  loadings_comp <- model$xloadings[, comp]
+  sort_genes <- names(sort(abs(loadings_comp), decreasing = TRUE))[1:10]
+  loadings_values <- loadings_comp[sort_genes]
+  data.frame(Gene = sort_genes, Loading = loadings_values, Component = comp)
+})
+
+# Combine the top 10 genes per component into a dataframe:
+top_genes_df <- do.call(rbind, top_genes)
+rownames(top_genes_df) <- NULL
+```
+
+Now I have a dataframe containing the top 10 genes that contributed the most to each component. I will take a look at the top 10 of each component. 
+
+```{r}
+top_genes_df[top_genes_df$Component == 1, ]
+```
+
+```{r}
+top_genes_df[top_genes_df$Component == 2, ]
+```
+
+```{r}
+top_genes_df[top_genes_df$Component == 3, ]
+```
+
+```{r}
+top_genes_df[top_genes_df$Component == 4, ]
+```
+
+```{r}
+top_genes_df[top_genes_df$Component == 5, ]
+```
+
+```{r}
+top_genes_df[top_genes_df$Component == 6, ]
+```
+
+```{r}
+top_genes_df[top_genes_df$Component == 7, ]
+```
+
+Looking at the top 10 genes for each component almost each top 10 is completely unique there is one duplicate and that is `Gm29216` it appears in the top of component 6 and in the top 10 of component 7. Besides the one duplicate each component is seperated by completely unique genes. To make sure whether or not the seperations make biological sense, I will have to look up the functions of the genes.
+
+# Writing article:
+
+## Introduction:
+
+**21-5-2025:**
+
+Today I discussed with my group and I suggested that I can start writing the introduction. So I wrote a first draft of the introduction.
+
+## Materials and methods:
+
+**21-5-2025: & 22-5-2025:**
+
+On these days I worked on the data collection and differential expression analysis part of the materials and methods.
+
+## Results:
+
+**22-5-2025:**
+
+Today I added the first results to our paper, I added the transcriptomics PCA plot and wrote some accompanying text.
+
+## Discussion:
+
+## Conclusion:
 
 
 
