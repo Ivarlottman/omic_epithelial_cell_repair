@@ -11,7 +11,7 @@
 
 <meta name="author" content="Mirte Draaijer" />
 
-<meta name="date" content="2025-05-22" />
+<meta name="date" content="2025-05-26" />
 
 <title>Logboek Mirte</title>
 
@@ -1504,7 +1504,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">Logboek Mirte</h1>
 <h4 class="author">Mirte Draaijer</h4>
-<h4 class="date">2025-05-22</h4>
+<h4 class="date">2025-05-26</h4>
 
 </div>
 
@@ -2452,7 +2452,7 @@ dataframe:</p>
 <pre class="r"><code># Extract the top 10 genes for each component
 top_genes &lt;- lapply(1:7, function(comp) {
   loadings_comp &lt;- model$xloadings[, comp]
-  sort_genes &lt;- names(sort(abs(loadings_comp), decreasing = TRUE))[1:10]
+  sort_genes &lt;- names(sort(abs(loadings_comp), decreasing = TRUE))[1:3]
   loadings_values &lt;- loadings_comp[sort_genes]
   data.frame(Gene = sort_genes, Loading = loadings_values, Component = comp)
 })
@@ -2460,100 +2460,254 @@ top_genes &lt;- lapply(1:7, function(comp) {
 # Combine the top 10 genes per component into a dataframe:
 top_genes_df &lt;- do.call(rbind, top_genes)
 rownames(top_genes_df) &lt;- NULL</code></pre>
-<p>Now I have a dataframe containing the top 10 genes that contributed
-the most to each component. I will take a look at the top 10 of each
+<p>Now I have a dataframe containing the top 3 genes that contributed
+the most to each component. I will take a look at the top 3 of each
 component.</p>
-<pre class="r"><code>top_genes_df[top_genes_df$Component == 1, ]</code></pre>
-<pre><code>##      Gene   Loading Component
-## 1    Calu -5.552152         1
-## 2  Washc2 -5.545916         1
-## 3    Sun1 -5.545265         1
-## 4   Lamp2 -5.544525         1
-## 5   Ube2h -5.544321         1
-## 6    Inf2 -5.543541         1
-## 7    Evc2 -5.542922         1
-## 8  Rnf216 -5.539966         1
-## 9     Gaa -5.539905         1
-## 10 Gramd4 -5.537494         1</code></pre>
-<pre class="r"><code>top_genes_df[top_genes_df$Component == 2, ]</code></pre>
-<pre><code>##        Gene   Loading Component
-## 11    Kpna2 -5.558069         2
-## 12   Atp1b1 -5.557888         2
-## 13     Gpd1 -5.556245         2
-## 14 AI506816 -5.552614         2
-## 15     Tmc4 -5.552030         2
-## 16  Shroom3 -5.551940         2
-## 17     Cdh1 -5.551880         2
-## 18     F11r -5.551713         2
-## 19    Anxa3 -5.550731         2
-## 20   Pard6b -5.550687         2</code></pre>
-<pre class="r"><code>top_genes_df[top_genes_df$Component == 3, ]</code></pre>
-<pre><code>##       Gene   Loading Component
-## 21    Saa3 -4.292837         3
-## 22    Slpi -4.036710         3
-## 23    Lcn2 -4.025744         3
-## 24 Il13ra2 -3.463614         3
-## 25  Steap4 -3.435464         3
-## 26   Gdpd2 -3.381882         3
-## 27 Adamts7 -3.303339         3
-## 28   Nptx1  3.268923         3
-## 29   Cxcl5 -3.264189         3
-## 30    Stc1 -3.199023         3</code></pre>
-<pre class="r"><code>top_genes_df[top_genes_df$Component == 4, ]</code></pre>
-<pre><code>##          Gene   Loading Component
-## 31     Gm2991 -4.446569         4
-## 32    Tma7-ps -4.278152         4
-## 33   Rps2-ps6 -4.125049         4
-## 34     Gm4332 -4.112910         4
-## 35      Cops9 -3.978758         4
-## 36  Rps12-ps3 -3.956640         4
-## 37    Gm11249 -3.920372         4
-## 38  Rps2-ps13 -3.914542         4
-## 39 Rpl36-ps12 -3.841591         4
-## 40  Rps13-ps2 -3.809942         4</code></pre>
-<pre class="r"><code>top_genes_df[top_genes_df$Component == 5, ]</code></pre>
-<pre><code>##         Gene  Loading Component
-## 41   Gm13436 2.909224         5
-## 42   Gm10184 2.898693         5
-## 43 Hmgb1-ps7 2.784844         5
-## 44    Gm7935 2.707174         5
-## 45   Gm14176 2.643239         5
-## 46   Gm15427 2.595248         5
-## 47    Gm7901 2.576596         5
-## 48    Gm8399 2.550819         5
-## 49   Gm11560 2.538426         5
-## 50    Gm9800 2.499480         5</code></pre>
-<pre class="r"><code>top_genes_df[top_genes_df$Component == 6, ]</code></pre>
-<pre><code>##         Gene  Loading Component
-## 51   Gm14681 3.134092         6
-## 52 Rpl17-ps3 2.962210         6
-## 53   Gm10269 2.833614         6
-## 54   Gm10095 2.816207         6
-## 55    Gm9761 2.806161         6
-## 56 Rpl14-ps1 2.724972         6
-## 57   Gm13680 2.719716         6
-## 58 Rps24-ps3 2.713499         6
-## 59   Gm29216 2.692614         6
-## 60    Gm6204 2.639461         6</code></pre>
-<pre class="r"><code>top_genes_df[top_genes_df$Component == 7, ]</code></pre>
-<pre><code>##             Gene   Loading Component
-## 61         Sftpc  2.679819         7
-## 62      Rpsa-ps7 -2.366010         7
-## 63       Gm29216  2.313948         7
-## 64        Gm6789 -2.288665         7
-## 65       Gm10925  2.245874         7
-## 66      Cbx3-ps6  2.081694         7
-## 67 6330418K02Rik  2.023445         7
-## 68         Atp5k -1.997742         7
-## 69       Gm10073 -1.981787         7
-## 70       Gm20554 -1.971753         7</code></pre>
-<p>Looking at the top 10 genes for each component almost each top 10 is
-completely unique there is one duplicate and that is
-<code>Gm29216</code> it appears in the top of component 6 and in the top
-10 of component 7. Besides the one duplicate each component is seperated
-by completely unique genes. To make sure whether or not the seperations
-make biological sense, I will have to look up the functions of the
-genes.</p>
+<pre class="r"><code>top_genes_df</code></pre>
+<pre><code>##         Gene   Loading Component
+## 1       Calu -5.552152         1
+## 2     Washc2 -5.545916         1
+## 3       Sun1 -5.545265         1
+## 4      Kpna2 -5.558069         2
+## 5     Atp1b1 -5.557888         2
+## 6       Gpd1 -5.556245         2
+## 7       Saa3 -4.292837         3
+## 8       Slpi -4.036710         3
+## 9       Lcn2 -4.025744         3
+## 10    Gm2991 -4.446569         4
+## 11   Tma7-ps -4.278152         4
+## 12  Rps2-ps6 -4.125049         4
+## 13   Gm13436  2.909224         5
+## 14   Gm10184  2.898693         5
+## 15 Hmgb1-ps7  2.784844         5
+## 16   Gm14681  3.134092         6
+## 17 Rpl17-ps3  2.962210         6
+## 18   Gm10269  2.833614         6
+## 19     Sftpc  2.679819         7
+## 20  Rpsa-ps7 -2.366010         7
+## 21   Gm29216  2.313948         7</code></pre>
+<p>Looking at the top 3 genes for each component each top 3 is
+completely unique. Each component is seperated by completely unique
+genes. To make sure whether or not the seperations make biological
+sense, I will have to look up the functions of the genes.</p>
+<p><strong>26-5-2025:</strong></p>
+<p>I will start with looking up the functions of the top 3 of component
+1.</p>
+<table>
+<colgroup>
+<col width="2%" />
+<col width="97%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Gene:</th>
+<th>Function:</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Calu</td>
+<td>Calcium binding protein localized in the endoplasmic reticulum (ER).
+Involved in ER functions.</td>
+</tr>
+<tr class="even">
+<td>Washc2</td>
+<td>Wasc2CaluEnables phsophatidylinositol phosphate binding activity,
+phosphatidylinositol-3,4-bisphosphate binding activity, and retromer
+complex binding activity. Involved in endosomal transport, negative
+regulation of barbed-end actin filament capping, protein localization to
+the endosome. Located in the cytosol, early endosome, and
+nucleolus.</td>
+</tr>
+<tr class="odd">
+<td>Sun1</td>
+<td>Member of the unc-84 homolog family. Encodes a nuclear envelope
+protein with an Unc84 domain. Involved in nuclear Anchorage and
+migration.</td>
+</tr>
+</tbody>
+</table>
+<p>Component 2:</p>
+<table>
+<colgroup>
+<col width="4%" />
+<col width="95%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Gene:</th>
+<th>Function:</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Kpna2</td>
+<td>Imports proteins into the nucleulus, a process that involves at
+least 2 steps. Plays a role in V(D)J recombination as well.</td>
+</tr>
+<tr class="even">
+<td>Atp1b1</td>
+<td>The protein belongs to the Na+/K+ and H+/K+ ATPases beta chain
+proteins family. Is integral for membrane protein responisble for
+establishing and maintaining the electrochemical gradients.</td>
+</tr>
+<tr class="odd">
+<td>Gpd1</td>
+<td>Encodes a member of the NAD-dependent glycerol-3-phosphate
+dehydrogenase family. Plays a critical role in carbohydrate and lipid
+metabolism.</td>
+</tr>
+</tbody>
+</table>
+<p>Component 3:</p>
+<table>
+<colgroup>
+<col width="2%" />
+<col width="97%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Gene:</th>
+<th>Function:</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Saa3</td>
+<td>Enables toll-like receptor 4 binding activity and chemoattractant
+activity.</td>
+</tr>
+<tr class="even">
+<td>Slpi</td>
+<td>Encodes a secreted inhibitor which protects ephithelial tissues from
+serine proteases. Found in various secretions. Contributes to the immune
+response by protecting epithelial surfaces from attack by endogenous
+proteolytic enzymes.</td>
+</tr>
+<tr class="odd">
+<td>Lcn2</td>
+<td>Encodes a protein that belongs to the lipocalin family. Members of
+this family transport small hydrophobic molecules. The presence of this
+protein in blood and urine is an early biomarker of acute kidney injury.
+Involved in maintenance of skin homeostasis, supression of invasiveness
+and metastatis.</td>
+</tr>
+</tbody>
+</table>
+<p>Component 4:</p>
+<table>
+<colgroup>
+<col width="11%" />
+<col width="88%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Gene:</th>
+<th>Function:</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Gm2991</td>
+<td>Predicted pseudogene, function unclear</td>
+</tr>
+<tr class="even">
+<td>Tma7-ps</td>
+<td>Associated with translational machinery.</td>
+</tr>
+<tr class="odd">
+<td>Rps2-ps6</td>
+<td>Pseudogene most likely associated with ribosomes. Catalyze protein
+synthesis.</td>
+</tr>
+</tbody>
+</table>
+<p>Component 5:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Gene:</th>
+<th>Function:</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Gm13436</td>
+<td>No functions found.</td>
+</tr>
+<tr class="even">
+<td>Gm10184</td>
+<td>Predicted pseudogene.</td>
+</tr>
+<tr class="odd">
+<td>Hmgb1-ps7</td>
+<td>High mobility group, pseudogene 7.</td>
+</tr>
+</tbody>
+</table>
+<p>Component 6:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Gene:</th>
+<th>Function:</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Gm14681</td>
+<td>No functions found.</td>
+</tr>
+<tr class="even">
+<td>Rpl17-ps3</td>
+<td>Ribosomal protein L17, pseudogene 3.</td>
+</tr>
+<tr class="odd">
+<td>Gm10269</td>
+<td>Pseudogene, no function found.</td>
+</tr>
+</tbody>
+</table>
+<p>Component 7:</p>
+<table>
+<colgroup>
+<col width="6%" />
+<col width="93%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Gene:</th>
+<th>Function:</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Sftpc</td>
+<td>Encodes the pulmonary-associated surfactant protein C (SPC), an
+extremely hydrophobic surfactant protein essential for lung cuntion and
+homeostasis.</td>
+</tr>
+<tr class="even">
+<td>Rpsa-ps7</td>
+<td>Pseudogene similiar to 40S ribosomal protein.</td>
+</tr>
+<tr class="odd">
+<td>Gm29216</td>
+<td>Pseudogene, no function found.</td>
+</tr>
+</tbody>
+</table>
+<p>All information about the genes was derived from <a href="https://www.genecards.org/" class="uri">https://www.genecards.org/</a> and from <a href="https://www.informatics.jax.org/" class="uri">https://www.informatics.jax.org/</a></p>
+<p>When looking at the tables I made containing the information about
+each gene of the top 3 of each component there are 2 that are
+particullary intresting: Slpi and Sftpc. Slpi encodes a secreted
+inhibitor which protects ephithelial tissues from serine proteases, this
+happens in the lungs as well. So this is something we can connect to the
+original article. Sftpc encodes the pulmonary-associated surfactant
+protein C (SPC), an extremely hydrophobic surfactant protein essential
+for lung funtion and homeostasis, pulmonary-associated surfactant
+protein C is present i n the lungs. So this is something we can connect
+to the original article as well.</p>
 </div>
 </div>
 <div id="writing-article" class="section level1">
@@ -2570,12 +2724,16 @@ introduction.</p>
 <p><strong>21-5-2025: &amp; 22-5-2025:</strong></p>
 <p>On these days I worked on the data collection and differential
 expression analysis part of the materials and methods.</p>
+<p><strong>25-5-2025:</strong></p>
+<p>Today I wrote the materials and methods for the PLS-DA.</p>
 </div>
 <div id="results" class="section level2">
 <h2>Results:</h2>
 <p><strong>22-5-2025:</strong></p>
 <p>Today I added the first results to our paper, I added the
 transcriptomics PCA plot and wrote some accompanying text.</p>
+<p><strong>26-5-2025:</strong></p>
+<p>Today I added the PLS-DA results to our paper.</p>
 </div>
 <div id="discussion" class="section level2">
 <h2>Discussion:</h2>
