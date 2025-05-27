@@ -1,8 +1,18 @@
 ---
 title: "Logfile_Kasthury"
 author: "Kasthury Inparajah"
-date: "2025-05-16"
-output: html_document
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+lang: "en"
+editor_options: 
+  markdown: 
+    wrap: sentence
 ---
 
 ```{r setup, include=FALSE}
