@@ -42,8 +42,9 @@ write about assignments and found articles and overview of it
 ## Install libraries
 ```{r Install packages, echo=FALSE}
 
-install.packages("readxl")
-install.packages("imputeLCMD")
+#install.packages("readxl")
+#install.packages("imputeLCMD")
+#options(repos = c(CRAN = "https://cloud.r-project.org"))
 
 ```
 
@@ -54,6 +55,27 @@ install.packages("imputeLCMD")
 
   BiocManager::install('PCAtools')
   
+```
+
+```{r ClusterProfiler download, echo=FALSE}
+
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("clusterProfiler")
+BiocManager::install("org.Hs.eg.db")
+BiocManager::install("org.Mm.eg.db")
+BiocManager::install("ReactomePA")
+
+```
+
+```{r Install pathview package}
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("pathview")
+
 ```
 
 ## Load libraries
@@ -232,7 +254,9 @@ sf_log2_common <- sf_log2[common_genes, ]
 ```
 
 ```{r Combine subsets, echo=FALSE}
+
 combined_log2 <- cbind(ev_log2_common, sf_log2_common)
+
 ```
 
 ```{r Transpose, echo=FALSE}
@@ -258,6 +282,7 @@ ggplot(pca_df, aes(x = PC1, y = PC2, color = Group)) +
   labs(title = "PCA EV & SF samples global")
 
 ```
+
 This PCA plot only depicts the difference between EV and SF but not the difference within the groups itself.
 
 ```{r Plot, echo=FALSE}
@@ -286,17 +311,6 @@ This PCA plot depicts the PCA scores of the data. Although there is nothing stan
 
 ## **Pathway analysis**
 
-```{r ClusterProfiler download, echo=FALSE}
-
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install("clusterProfiler")
-BiocManager::install("org.Hs.eg.db")
-BiocManager::install("org.Mm.eg.db")
-BiocManager::install("ReactomePA")
-
-```
 Now that we have started with the pathway analysis of the proteins, the first step we have to make is to transpose the names of the genes to the standard ID.
 
 ```{r List of genes, echo=FALSE}
@@ -353,7 +367,6 @@ dotplot(kegg_results_humans, showCategory=15)
 
 ```
 
-
 ```{r Translate gene to Entrez ID for mice, echo=FALSE}
 
 # Translate to Entrez ID
@@ -403,23 +416,12 @@ In the end, we will compare both plots to see if there is a difference.
 
 **NOTE: This above mentioned apprroach is for both EV and SF**
 
-I noticed that when the data has more filtered or missing data, the counts get lower. But I can't confirm this yet, hence why I plotted the amount of missing values against the counts. 
-
-```{r Relation between "counts" and "filtered", echo=FALSE}
-
-unlisted_counts <- unlist(counts)
-barplot(filtered ~ as.numeric(unlisted_counts))
-
-```
-
-This barplot depicts the relationship between filtered data and counts. It is now safe to say that missing data and counts are related to each other. 
-
 ## Dataframe complete genes
 As early mentioned before, we are going to make a dataframe of all the genes which have no missing values. 
 
 But first of all, we are going to remove unesseccary data. 
 
-```{r Remove counts, protein and gene row and column, echo=FALSE}
+```{r Remove counts, protein and gene row and column, echo=TRUE}
 
 ## EV df
 ## Remove counts (row)
@@ -439,7 +441,7 @@ sf_data_rm_col_row <- sf_data_rm_counts[-c(1, 2) ]
 
 As we have removed the the uneccessary row and colums, we now have to change the "filtered" or "NaN" values to NA.
 
-```{r Change not numeric values to NA, echo=FALSE}
+```{r Change not numeric values to NA, echo=TRUE}
 
 # For EV
 ev_data_rm_col_row[ev_data_rm_col_row == "Filtered"] <- NA
@@ -453,7 +455,7 @@ sf_data_rm_col_row[sf_data_rm_col_row == ""] <- NA
 
 Let's extract the gene rows from the df (ev_data_rm_counts and sf_data_rm_counts) to add them later.
 
-```{r Extract gene row from df, eval=FALSE}
+```{r Extract gene row from df, eval=TRUE}
 
 sf_genes <- sf_data_rm_counts[c(2)]
 
@@ -463,15 +465,11 @@ ev_genes <- ev_data_rm_counts[c(2)]
 
 Now we make an index to see which rows (which are complete) are needed for our new df.
 
-```{r Make index to see which rows are needed with complete data, echo=FALSE}
+```{r Make index to see which rows are needed with complete data, echo=TRUE}
 
 # Make df numeric
 ev_data_num <- as.data.frame(lapply(ev_data_rm_col_row, as.numeric))
 sf_data_num <- as.data.frame(lapply(sf_data_rm_col_row, as.numeric))
-
-# Add genenames column to df
-#ev_genes[923,c(1,2)] <- "TMPO_ISO"
-#row.names(ev_data_num) <- ev_genes$PG.Genes
 
 ev_data_num <- cbind(ev_genes, ev_data_num)
 sf_data_num <- cbind(sf_genes, sf_data_num)
@@ -488,7 +486,7 @@ df_complete_genes_sf <- sf_data_num[complete_genes_sf, , drop = FALSE]
 
 Let's do the same to genes which miss 1 value.
 
-```{r Make index to see which rows are needed with almost complete data, echo=FALSE}
+```{r Make index to see which rows are needed with almost complete data, echo=TRUE}
 
 # Make df numeric
 ev_data_num <- as.data.frame(lapply(ev_data_rm_col_row, as.numeric))
@@ -509,7 +507,7 @@ df_almost_complete_genes_sf <- sf_data_num[almost_complete_genes_sf, , drop = FA
 
 Since df_almost_complete_genes_ev and df_almost_complete_genes_sf do not have all values, we are going to impute them by taking the mean of the row. 
 
-```{r Impute missing data, eval=FALSE}
+```{r Impute missing data, eval=TRUE}
 
 # For EV
 ev_imputed2 <- as.data.frame(lapply(df_almost_complete_genes_ev, function(x) {
@@ -525,7 +523,7 @@ sf_imputed2 <- as.data.frame(lapply(df_almost_complete_genes_sf, function(x) {
 
 Now we can start with RLE normalisation, but before that, we need to split the gene column from the data and add then as rownames, therefore we also need to make a matrix from the data
 
-```{r Pre-process RLE normalisation by deleting the gene columns, eval=FALSE}
+```{r Pre-process RLE normalisation by deleting the gene columns, eval=TRUE}
 
 # Complete data
 
@@ -551,7 +549,7 @@ rownames(sf_matrix) <- sf_imputed2[, "PG.Genes"]
 
 We can now start with RLE normalisation
 
-```{r Calculate the geometrical mean for the complete data, echo=FALSE}
+```{r Calculate the geometrical mean for the complete data, echo=TRUE}
 
 # Geometrical mean
 geo_mean <- function(x) exp(mean(log(x[x > 0])))
@@ -582,7 +580,7 @@ sf_complete_normalized_df <- cbind(PG.Genes = rownames(sf_complete_matrix), as.d
 
 ```
 
-```{r Calculate the geometrical mean for the data with imputed values, echo=FALSE}
+```{r Calculate the geometrical mean for the data with imputed values, echo=TRUE}
 
 # Geometrical mean
 geo_mean <- function(x) exp(mean(log(x[x > 0])))
@@ -617,7 +615,7 @@ Let's start with the data which was already complete and was RLE normalised.
 
 Since EV contains less data compared to SF, we are only going to do a PCA on the genes which are available in both data.
 
-```{r Pre-process complete data for PCA, eval=FALSE}
+```{r Pre-process complete data for PCA, eval=TRUE}
 
 # Find common genes
 common_genes_complete <- intersect(rownames(ev_complete_normalized_df), rownames(sf_complete_normalized_df))
@@ -651,7 +649,7 @@ pca_df_complete$subject <- ifelse(grepl("36", pca_df_complete$sample), "36", "42
 
 Let's make the PCA plot. 
 
-```{r PCA plot complete data, eval=FALSE}
+```{r PCA plot complete data, eval=TRUE}
 
 library(ggplot2)
 
@@ -667,8 +665,7 @@ ggplot(pca_df_complete, aes(x = PC1, y = PC2, color = group, label = sample, sha
 
 Now that we have made a PCA for the complete data, let's make one for the imputed data. 
 
-
-```{r {r Pre-process imputed data for PCA, eval=FALSE}
+```{r {r Pre-process imputed data for PCA, eval=TRUE}
 
 # Find common genes
 common_genes_imputed <- intersect(rownames(ev_normalized_df), rownames(sf_normalized_df))
@@ -702,7 +699,7 @@ pca_df_imputed$subject <- ifelse(grepl("36", pca_df_imputed$sample), "36", "42")
 
 Now we are going to make a plot for the imputed data.
 
-```{r PCA plot imputed data, eval=FALSE}
+```{r PCA plot imputed data, eval=TRUE}
 
 library(ggplot2)
 
@@ -721,7 +718,7 @@ Just like we made a pathway analysis for the unfiltered data, we are now going t
 
 First of all, we have to transpose the names of the genes to the standard ID.
 
-```{r List of genes (complete data), echo=FALSE}
+```{r List of genes (complete data), echo=TRUE}
 
 # Get all genes
 all_genes_complete <- ev_complete_normalized_df$PG.Genes
@@ -735,8 +732,7 @@ unique_genes_complete <- unique(genes_vector_complete)
 ```
 
 As I have mentioned before, we have mice and human data. We start with the human pathway. 
-
-```{r Translate gene to Entrez ID for humans (complete data), echo=FALSE}
+```{r Translate gene to Entrez ID for humans (complete data), echo=TRUE}
 
 gene_symbols_complete <- unique_genes_complete
 
@@ -750,7 +746,7 @@ head(entrez_ids_humans_complete)
 
 ```
 
-```{r Vector with ENTREZ ID for humans (complete data), echo=FALSE}
+```{r Vector with ENTREZ ID for humans (complete data), echo=TRUE}
 
 # Make vector
 entrez_ids_humans_complete <- entrez_ids_humans_complete$ENTREZID
@@ -760,7 +756,7 @@ entrez_ids_humans_complete <- na.omit(as.numeric(entrez_ids_humans_complete))
 
 ```
 
-```{r KEGG Pathway analysis for humans  (complete data), echo=FALSE}
+```{r KEGG Pathway analysis for humans  (complete data), echo=TRUE}
 
 # KEGG pathway analysis for humans
 kegg_results_humans_complete <- enrichKEGG(gene = entrez_ids_humans_complete,
@@ -778,7 +774,7 @@ dotplot(kegg_results_humans_complete, showCategory=15)
 
 And now for the mice.
 
-```{r Translate gene to Entrez ID for mice (complete data), echo=FALSE}
+```{r Translate gene to Entrez ID for mice (complete data), echo=TRUE}
 
 gene_symbols_complete <- unique_genes_complete
 
@@ -792,7 +788,7 @@ head(entrez_ids_mice_complete)
 
 ```
 
-```{r Vector with ENTREZ ID for mice (complete data), echo=FALSE}
+```{r Vector with ENTREZ ID for mice (complete data), echo=TRUE}
 
 # Make vector
 entrez_ids_mice_complete <- entrez_ids_mice_complete$ENTREZID
@@ -802,7 +798,7 @@ entrez_ids_mice_complete <- na.omit(as.numeric(entrez_ids_mice_complete))
 
 ```
 
-```{r KEGG Pathway analysis for mice  (complete data), echo=FALSE}
+```{r KEGG Pathway analysis for mice  (complete data), echo=TRUE}
 
 # KEGG pathway analysis for mice
 kegg_results_mice_complete <- enrichKEGG(gene = entrez_ids_mice_complete,
@@ -820,7 +816,7 @@ dotplot(kegg_results_mice_complete, showCategory=15)
 
 Let's do the pathway analysis for the imputed data.
 
-```{r List of genes (imputed data), echo=FALSE}
+```{r List of genes (imputed data), echo=TRUE}
 
 # Get all genes
 all_genes_imputed <- ev_normalized_df$PG.Genes
@@ -833,7 +829,7 @@ unique_genes_imputed <- unique(genes_vector_imputed)
 
 ```
 
-```{r Translate gene to Entrez ID for humans (imputed data), echo=FALSE}
+```{r Translate gene to Entrez ID for humans (imputed data), echo=TRUE}
 
 gene_symbols_imputed <- unique_genes_imputed
 
@@ -847,7 +843,7 @@ head(entrez_ids_humans_imputed)
 
 ```
 
-```{r Vector with ENTREZ ID for humans (imputed data), echo=FALSE}
+```{r Vector with ENTREZ ID for humans (imputed data), echo=TRUE}
 
 # Make vector
 entrez_ids_humans_imputed <- entrez_ids_humans_imputed$ENTREZID
@@ -857,7 +853,7 @@ entrez_ids_humans_imputed <- na.omit(as.numeric(entrez_ids_humans_imputed))
 
 ```
 
-```{r KEGG Pathway analysis for humans  (imputed data), echo=FALSE}
+```{r KEGG Pathway analysis for humans  (imputed data), echo=TRUE}
 
 # KEGG pathway analysis for humans
 kegg_results_humans_imputed <- enrichKEGG(gene = entrez_ids_humans_imputed,
@@ -875,7 +871,7 @@ dotplot(kegg_results_humans_imputed, showCategory=10)
 
 And now for the mice.
 
-```{r Translate gene to Entrez ID for mice (imputed data), echo=FALSE}
+```{r Translate gene to Entrez ID for mice (imputed data), echo=TRUE}
 
 gene_symbols_imputed <- unique_genes_imputed
 
@@ -889,7 +885,7 @@ head(entrez_ids_mice_imputed)
 
 ```
 
-```{r Vector with ENTREZ ID for mice (imputed data), echo=FALSE}
+```{r Vector with ENTREZ ID for mice (imputed data), echo=TRUE}
 
 # Make vector
 entrez_ids_mice_imputed <- entrez_ids_mice_imputed$ENTREZID
@@ -899,7 +895,7 @@ entrez_ids_mice_imputed <- na.omit(as.numeric(entrez_ids_mice_imputed))
 
 ```
 
-```{r KEGG Pathway analysis for mice  (imputed data), echo=FALSE}
+```{r KEGG Pathway analysis for mice  (imputed data), echo=TRUE}
 
 # KEGG pathway analysis for mice
 kegg_results_mice_imputed <- enrichKEGG(gene = entrez_ids_mice_imputed,
@@ -918,7 +914,9 @@ dotplot(kegg_results_mice_imputed, showCategory=10)
 We are now going to make a visualisation of the pathway. This code was written by my peer J. Jonker. 
 
 Visualisation pathway human complete data:
-```{r Visualisation pathway COVID-19 complete data human, eval=FALSE}
+
+```{r Visualisation pathway COVID-19 complete data human, eval=TRUE}
+library(pathview)
 
 setwd("visualisation_pathway_proteomics/imputed_data/human")
 
@@ -940,7 +938,7 @@ pathview(
 ```
 
 Visualisation pathway mice complete data:
-```{r Visualisation pathway COVID-19 complete data mice, eval=FALSE}
+```{r Visualisation pathway COVID-19 complete data mice, eval=TRUE}
 
 setwd("visualisation_pathway_proteomics/complete_data/mice")
 
@@ -962,7 +960,7 @@ pathview(
 ```
 
 Visualisation pathway mice imputed data:
-```{r Visualisation pathway COVID-19 imputed data mice, eval=FALSE}
+```{r Visualisation pathway COVID-19 imputed data mice, eval=TRUE}
 
 setwd("visualisation_pathway_proteomics/imputed_data/mice")
 
