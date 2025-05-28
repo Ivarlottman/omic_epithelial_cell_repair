@@ -1173,97 +1173,114 @@ We are now going to make a visualisation of the pathway. Since COVID-19 recurred
 
 Visualisation pathway human imputed data (EV):
 
-```{r}
-# Stel je hebt deze dataframe met expressiegegevens
-expr_df <- ev_normalized_df  # bijvoorbeeld
-
-# Neem alleen genen die vertaald zijn naar Entrez
-expr_df <- expr_df[expr_df$PG.Genes %in% gene_symbols_imputed_ev, ]
-
-# Maak een vector met expressie, waarbij de namen Entrez-ID's zijn
-gene_to_entrez <- bitr(expr_df$PG.Genes, fromType = "ALIAS", toType = "ENTREZID", OrgDb = org.Hs.eg.db)
-
-# Merge expressie met Entrez-ID’s
-merged_df <- merge(expr_df, gene_to_entrez, by.x = "PG.Genes", by.y = "ALIAS")
-
-# Stel dat kolom `logFC` je expressie is:
-gene_vector <- merged_df$logFC
-names(gene_vector) <- merged_df$ENTREZID
-
-
-```
-
 ```{r Visualisation pathway COVID-19 imputed data human (EV), eval=TRUE}
+
 library(pathview)
 
-setwd("visualisation_pathway_proteomics/imputed_data/human")
+setwd("visualisation_pathway_proteomics/imputed_data/human/EV")
+
+entrez_ids_humans_imputed_ev <- as.character(entrez_ids_humans_imputed_ev)
 
 pathview(
   gene.data = entrez_ids_humans_imputed_ev,
   pathway.id = "hsa05171",
   species = "hsa",
-  out.suffix = "Coronavirus_disease_COVID-19",
+  out.suffix = "Coronavirus_disease_COVID-19_EV",
   low=list(gene="magenta"),
-  high=list(gene="green")
+  high=list(gene="green"),
+  gene.idtype = "ENTREZ"
 )
 
 ```
 
-```{r}
+Visualisation pathway mice imputed data (EV):
+
+```{r Visualisation pathway COVID-19 imputed data mice (EV), eval=TRUE}
 
 library(pathview)
-library(gage)
-library(gageData)
 
+setwd("visualisation_pathway_proteomics/imputed_data/mice/EV")
+
+entrez_ids_mice_imputed_ev <- as.character(entrez_ids_mice_imputed_ev)
+
+pathview(
+  gene.data = entrez_ids_mice_imputed_ev,
+  pathway.id = "mmu05171",
+  species = "mmu",
+  out.suffix = "Coronavirus_disease_COVID-19_EV",
+  low=list(gene="magenta"),
+  high=list(gene="green"),
+  gene.idtype = "ENTREZ"
+)
+
+```
+
+Visualisation pathway human imputed data (SF):
+
+```{r Visualisation pathway COVID-19 imputed data human (SF), eval=TRUE}
+
+library(pathview)
+
+setwd("visualisation_pathway_proteomics/imputed_data/human/SF")
+
+entrez_ids_humans_imputed_sf <- as.character(entrez_ids_humans_imputed_sf)
+
+pathview(
+  gene.data = entrez_ids_humans_imputed_sf,
+  pathway.id = "hsa05171",
+  species = "hsa",
+  out.suffix = "Coronavirus_disease_COVID-19_SF",
+  low=list(gene="magenta"),
+  high=list(gene="green"),
+  gene.idtype = "ENTREZ"
+)
 
 ```
 
-```{r}
-#foldchanges = res
+Visualisation pathway mice imputed data (SF):
 
-```
-```{r}
+```{r Visualisation pathway COVID-19 imputed data mice (SF), eval=TRUE}
 
+library(pathview)
 
-```
-```{r}
+setwd("visualisation_pathway_proteomics/imputed_data/mice/SF")
 
+entrez_ids_mice_imputed_sf <- as.character(entrez_ids_mice_imputed_sf)
 
-```
-```{r}
-
-
-```
-```{r}
-
-
-```
-```{r}
-
-
-```
-```{r}
-
-
-```
-```{r}
-
-
-```
-```{r}
-
-
-```
-```{r}
-
-
-```
-```{r}
-
+pathview(
+  gene.data = entrez_ids_mice_imputed_sf,
+  pathway.id = "mmu05171",
+  species = "mmu",
+  out.suffix = "Coronavirus_disease_COVID-19_SF",
+  low=list(gene="magenta"),
+  high=list(gene="green"),
+  gene.idtype = "ENTREZ"
+)
 
 ```
 ### Pathway images COVID-19
 
-The following image depicts the pathway of COVID-19 in mice which comes from the complete dataset.
+The following image depicts the pathway of COVID-19 in human which comes from the imputed dataset of both EV and SF.
 
-#![Pathway mice complete #data]#(imgs_trans/extracellular_vs_soluble/mmu00562.metabolism.png)
+![Pathway COVID-19 in human imputed data EV](visualisation_pathway_proteomics/imputed_data/human/EV/hsa05171.Coronavirus_disease_COVID-19_EV.png)
+
+![Pathway COVID-19 in human imputed data SF](visualisation_pathway_proteomics/imputed_data/human/SF/hsa05171.Coronavirus_disease_COVID-19_SF.png)
+
+![Pathway COVID-19 in mice imputed data EV](visualisation_pathway_proteomics/imputed_data/mice/EV/mmu05171.Coronavirus_disease_COVID-19_EV.png)
+
+```{r Visualisation pathway COVID-19 imputed data human SF vs EV, eval=TRUE}
+
+
+
+
+
+```
+
+
+
+
+```{r Show all packages and their versions, eval=FALSE}
+
+installed.packages()[, c("Package", "Version")]
+
+```
