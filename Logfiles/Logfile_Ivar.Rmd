@@ -110,16 +110,15 @@ prot_frame
 
 imputatie based on mean
 
-```{r}
+```{r mutation}
 pre_imp_ev <- prot_frame[,1:5]
 pre_imp_ev$gene <- row.names(prot_frame)
 #head(pre_imp_ev)
 imp_ev <- pre_imp_ev %>%
-  mutate(rowMean = as.integer(rowMeans(select(., -gene), na.rm = T)),
+  mutate(rowMean = as.integer(base::rowMeans(select(., -gene), na.rm = T)),
          across(starts_with("X"),
                 ~ coalesce(., rowMean))) %>%
   select(-rowMean)
-
 #sf
 pre_imp_sf <- prot_frame[,6:10]
 pre_imp_sf$gene <- rownames(prot_frame)
@@ -308,16 +307,44 @@ colom word
 library("mdatools")
 #plsda()
 #plda_t <- t(imputed_prot)
+vst
 ```
 
 
 
+Tekst 
+
+Data imputation:
+During the exploretory data analysis we found a large amount of missing data in the proteomics folderm and, because the proteomics analysis only had 10 samples divided over 2 groups we decided to go forward with the genes that only had a maximum of 1 missing value per group. for the missing value we imputed using the mean value of the group. 
+
+Data analysis and visualisation:	 
+All data analysis was preformed using R version 4.5.0., using the tidyverse style guidelines.
+For data manipulations we used dplyr version 1.1.4 and tidyr 1.3.1. As for visualsing the data we used ggplot 3.5.2 and paletteer 1.6.0
+
+proteomics pca
+Protomics was done in the same way as transcriptomics apart from that the analysis was done with 841 genes and with only 2 groups EV and SF.
+
+pc text
+Figure 2 is the PCA plot of the proteomics data based on the 1st and the 3rd prncipal component. It can be observed that most of the variation lies is in the first princepel component. and on the 3rd component the EV group is slightly more spread then the SF group. The reason pc 1 and 3 are visualised is because is shows a more interesting visualisation then pc 1 and 2 with only 3% variance difference in pc 2 and 3.
 
 
+Discussions
+pca loadings
+In Table 3 we can see the loadings of the proteomics PCA in decending order of the first 3 components. 2 of the genes we found interesting are:
+ACTN4 
+ACTN4 is a gene that belongs to the alpha actinins gene famaly that can have mutible functions depending on the cell type.
+FBLN2
+FBLN2 is a gene that is involved in the develepment of the extracalaire matrix that is present in the reparation of dameged cells
+and both have strucural implications that could be interesting for the field of regenerative medecine 
+
+The proteomics PCA (figgure 2) shows that the EV and SF groups are very destinct groups where the first princepel component is the main divider containing 67% of the varaince. The 3rd component however shows a bit more simalarity in veraity among the samples and groups with only the EV group being a bit more spread. In the second principel component had more spread in the EV group and less in the SF group. Among the top 5 genes in the loadings of the first 3 principel componets we found 2 genes that could be intresting for future research.
 
 
+Points of critiek 
+We found that this data was not multi omic compatibel becouse when we went threw the data we discoverd that the proteomic and transcriptomic data have no relation that we could statistcly corralate to one another. this is because they are from diffrent sample types transcriptomics data was from mouse based genes and proteomics from human/mouse based genes. Also transcriptomics was done after the proteomics was alreddy done wich coused the issue that you cannot see effects of the EV and SF treatments from transcriptomics to proteomics.
 
+Lack of data:
+Their was an overal lack of data that made us unable to make decisives results and in specific the proteomics data set had allot of missing values wich coused us to throw out allot of the data that was gatherd. because of all of the missing values we chose to impute the data where it was possible but becouse of a lack of supporting data this was limmeting and makes the imputation less relaible.
 
-
-
+Covid contamination?
 
