@@ -152,18 +152,12 @@ fgsea_ora <- lapply(seq_along(gcUnique), function(i) {
 head(fgsea_ora)
 ```
 
-```{r, message=FALSE, warning=FALSE}
-if(!require(devtools)) install.packages("devtools")
-devtools::install_github("sinhrks/ggfortify")
-
-```
-
+# Pca
 
 ```{r, message=FALSE, warning=FALSE}
 data <- read.csv("../data/GSE271272_rawcounts.csv", row.names = 1)
 head(data)
 ```
-
 
 ```{r, message=FALSE, warning=FALSE}
 t_data = t(data)
@@ -204,9 +198,8 @@ autoplot(pca_result,
   theme_minimal()
 ```
 # Pathway analuse
-Nu ga ik bezig met de path way analyse met de deseq2 die ik van Mirte heb gekregen 
 
-
+## deseq2
 ```{r, message=FALSE, warning=FALSE}
 rna_seq_data <- read.csv(
   "../data/GSE271272_rawcounts.csv")
@@ -274,8 +267,7 @@ names(gene_ranks_extra_sol) <- rownames(extracellular_vs_soluble)
 gene_ranks_extra_sol <- sort(gene_ranks_extra_sol, decreasing = T)
 ```
 
-# Mens
-
+# Mouse
 
 ```{r, message=FALSE, warning=FALSE}
 df_genes <- data.frame(
@@ -314,11 +306,12 @@ head(gsea_kegg)
 ```
 
 ```{r}
-dotplot(gsea_kegg, showCategory=5, split=".sign") + facet_grid(.~.sign) + theme(axis.text.y = element_text(size = 9))+ labs(title = 'control vs extracellular')
+dotplot(gsea_kegg, showCategory=5, split=".sign") + facet_grid(.~.sign) + theme(axis.text.y = element_text(size = 9))+ labs(title = 'Control vs extracellular vesicles')
+
 ```
 
 ```{r}
-ridgeplot(gsea_kegg, fill = "p.adjust")+ theme_minimal() + labs(title = 'control vs extracellular')
+ridgeplot(gsea_kegg, showCategory=5, fill = "p.adjust")+ theme_minimal() + labs(title = 'Control vs extracellular vesicles')
 ```
 
 Conclusie – Pathwayactivatie in EV-conditie
@@ -456,11 +449,11 @@ head(gsea_kegg_2)
 
 
 ```{r}
-dotplot(gsea_kegg_2, showCategory=5, split=".sign") + facet_grid(.~.sign) + theme(axis.text.y = element_text(size = 9))+ labs(title = 'Control vs soluble')
+dotplot(gsea_kegg_2, showCategory=5, split=".sign") + facet_grid(.~.sign) + theme(axis.text.y = element_text(size = 9))+ labs(title = 'Control vs soluble factors')
 ```
 
 ```{r}
-ridgeplot(gsea_kegg_2, showCategory = 10, fill = "p.adjust")+ theme_minimal()+ labs(title = 'Control vs soluble')
+ridgeplot(gsea_kegg_2, showCategory = 10, fill = "p.adjust")+ theme_minimal()+ labs(title = 'Control vs soluble factors')
 ```
 
 
@@ -550,11 +543,11 @@ gsea_kegg_3 <- gseKEGG(
 
 
 ```{r}
-dotplot(gsea_kegg_3, showCategory=5, split=".sign") + facet_grid(.~.sign) + theme(axis.text.y = element_text(size = 9)) + labs(title = 'Extracellular vs soluble')
+dotplot(gsea_kegg_3, showCategory=5, split=".sign") + facet_grid(.~.sign) + theme(axis.text.y = element_text(size = 9)) + labs(title = 'Extracellular factors vs soluble factors')
 ```
 
 ```{r}
-ridgeplot(gsea_kegg_3, showCategory = 10, fill = "p.adjust")+ theme_minimal()+ theme(axis.text.y = element_text(size = 9))+ labs(title = 'Extracellular vs soluble')
+ridgeplot(gsea_kegg_3, showCategory = 5, fill = "p.adjust")+ theme_minimal()+ theme(axis.text.y = element_text(size = 9))+ labs(title = 'Extracellular factors vs soluble factors')
 ```
 
 Conclusie – Pathwayactivatie in EV t.o.v. SF-conditie
@@ -645,7 +638,7 @@ Inositol phosphate metabolism
 
 In deze pathway zijn meerdere enzymen actief betrokken bij de afbraak en omzetting van inositolfosfaten zichtbaar geactiveerd. Dit suggereert versterkte signaaloverdracht via second messengers, mogelijk als gevolg van EV-gerelateerde stimulatie van celinterne communicatie.
 
-# Muis 
+# Mens 
 
 ```{r, message=FALSE, warning=FALSE}
 df_genes_mens <- data.frame(
