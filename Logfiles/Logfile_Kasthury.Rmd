@@ -1,5 +1,5 @@
 ---
-title: "Logfile_Kasthury"
+title: "Logfile Kasthury"
 author: "Kasthury Inparajah"
 date: "`r Sys.Date()`"
 output:
@@ -40,15 +40,8 @@ write about assignments and found articles and overview of it
 **"Understudied proteins: opportunities and challenges for functional proteomics"**
 
 ## Install libraries
-```{r Install packages, echo=FALSE}
 
-#install.packages("readxl")
-#install.packages("imputeLCMD")
-#options(repos = c(CRAN = "https://cloud.r-project.org"))
-
-```
-
-```{r PCAtools download, echo=FALSE}
+```{r PCAtools download, echo=FALSE, message=FALSE}
 
   if (!requireNamespace('BiocManager', quietly = TRUE))
     install.packages('BiocManager')
@@ -57,7 +50,7 @@ write about assignments and found articles and overview of it
   
 ```
 
-```{r ClusterProfiler download, echo=FALSE}
+```{r ClusterProfiler download, echo=FALSE, message=FALSE}
 
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
@@ -69,7 +62,7 @@ BiocManager::install("ReactomePA")
 
 ```
 
-```{r Install pathview package}
+```{r Install pathview package, echo=FALSE, message=FALSE}
 
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
@@ -95,6 +88,9 @@ library(DESeq2)
 
 ## EDA
 ### **Transcriptomics**
+
+This is our transcriptomics data:
+
 ```{r Transcriptomics data, echo=FALSE}
 
 data_transcriptomics <- read.csv("../data/GSE271272_rawcounts.csv")
@@ -103,6 +99,9 @@ head(data_transcriptomics)
 ```
 
 ### **Proteomics**
+
+This is our proteomics data: 
+
 ```{r Proteomics data, echo=FALSE}
 
 data_proteomics <- readxl::read_excel("../data/2021-36_2021-42_SN16withHELAlib_MS2Quant_Qclassic_LocalNorm_NoImp.xlsx")
@@ -152,6 +151,8 @@ table(genes[genes %in% duplicates])
 ```
 
 The gene "TMPO" is 2x duplicated. As a solution for this problem, we can make unique rownames with the gene name added by the times it is duplicated.
+
+## **Pre-process PCA (old)**
 
 ```{r Unique rownames, echo=FALSE}
 
@@ -265,7 +266,7 @@ pca_result <- prcomp(t(combined_log2), scale. = TRUE)
 
 ```
 
-```{r Plot oud, echo=FALSE}
+```{r Plot, echo=FALSE}
 
 # Df for plot
 pca_df <- data.frame(pca_result$x)
@@ -309,7 +310,7 @@ ggplot(pca_df, aes(x=PC1, y=PC2, color=Group, shape=Subject)) +
 
 This PCA plot depicts the PCA scores of the data. Although there is nothing standing out from this plot, the difference between 36_EV and 42_EV is quite big. 
 
-## **Pathway analysis**
+## **Pathway analysis (old)**
 
 Now that we have started with the pathway analysis of the proteins, the first step we have to make is to transpose the names of the genes to the standard ID.
 
@@ -327,6 +328,8 @@ unique_genes <- unique(genes_vector)
 ```
 
 Since our dataset contains data from humans and mice, we are going to do a pathway analysis on both of them. We start with the human pathway. 
+
+## **Pathway: humans (old)**
 
 ```{r Translate gene to Entrez ID for humans, echo=FALSE}
 
@@ -367,6 +370,7 @@ dotplot(kegg_results_humans, showCategory=15)
 
 ```
 
+## **Pathway: mice (old)**
 ```{r Translate gene to Entrez ID for mice, echo=FALSE}
 
 # Translate to Entrez ID
@@ -419,6 +423,8 @@ In the end, we will compare both plots to see if there is a difference.
 ## Dataframe complete genes
 As early mentioned before, we are going to make a dataframe of all the genes which have no missing values. 
 
+### **Remove unesseccary data**
+
 But first of all, we are going to remove unesseccary data. 
 
 ```{r Remove counts, protein and gene row and column, echo=TRUE}
@@ -441,6 +447,8 @@ sf_data_rm_col_row <- sf_data_rm_counts[-c(1, 2) ]
 
 As we have removed the the uneccessary row and colums, we now have to change the "filtered" or "NaN" values to NA.
 
+### **Change to numeric values**
+
 ```{r Change not numeric values to NA, echo=TRUE}
 
 # For EV
@@ -455,6 +463,8 @@ sf_data_rm_col_row[sf_data_rm_col_row == ""] <- NA
 
 Let's extract the gene rows from the df (ev_data_rm_counts and sf_data_rm_counts) to add them later.
 
+### **Extract genes from dataframe**
+
 ```{r Extract gene row from df, eval=TRUE}
 
 sf_genes <- sf_data_rm_counts[c(2)]
@@ -462,6 +472,8 @@ sf_genes <- sf_data_rm_counts[c(2)]
 ev_genes <- ev_data_rm_counts[c(2)]
 
 ```
+
+### **Make index for complete data**
 
 Now we make an index to see which rows (which are complete) are needed for our new df.
 
@@ -483,6 +495,8 @@ df_complete_genes_ev <- ev_data_num[complete_genes_ev, , drop = FALSE]
 df_complete_genes_sf <- sf_data_num[complete_genes_sf, , drop = FALSE]
 
 ```
+
+### **Make index for almost complete data**
 
 Let's do the same to genes which miss 1 value.
 
@@ -520,6 +534,8 @@ sf_imputed2 <- as.data.frame(lapply(df_almost_complete_genes_sf, function(x) {
 }))
 
 ```
+
+### **RLE normalisation**
 
 Now we can start with RLE normalisation, but before that, we need to split the gene column from the data and add then as rownames, therefore we also need to make a matrix from the data
 
@@ -615,6 +631,9 @@ Let's start with the data which was already complete and was RLE normalised.
 
 Since EV contains less data compared to SF, we are only going to do a PCA on the genes which are available in both data.
 
+## **PCA complete data**
+### **Pre-process complete data for PCA**
+
 ```{r Pre-process complete data for PCA, eval=TRUE}
 
 # Find common genes
@@ -647,6 +666,8 @@ pca_df_complete$subject <- ifelse(grepl("36", pca_df_complete$sample), "36", "42
 
 ```
 
+### **PCA plot (complete data)**
+
 Let's make the PCA plot. 
 
 ```{r PCA plot complete data, eval=TRUE}
@@ -663,9 +684,12 @@ ggplot(pca_df_complete, aes(x = PC1, y = PC2, color = group, label = sample, sha
 
 ```
 
+## **PCA complete data**
+### **Pre-process imputed data for PCA**
+
 Now that we have made a PCA for the complete data, let's make one for the imputed data. 
 
-```{r {r Pre-process imputed data for PCA, eval=TRUE}
+```{r Pre-process imputed data for PCA, eval=TRUE}
 
 # Find common genes
 common_genes_imputed <- intersect(rownames(ev_normalized_df), rownames(sf_normalized_df))
@@ -697,6 +721,8 @@ pca_df_imputed$subject <- ifelse(grepl("36", pca_df_imputed$sample), "36", "42")
 
 ```
 
+### **PCA plot (imputed data)**
+
 Now we are going to make a plot for the imputed data.
 
 ```{r PCA plot imputed data, eval=TRUE}
@@ -713,270 +739,531 @@ ggplot(pca_df_imputed, aes(x = PC1, y = PC2, color = group, label = sample, shap
 
 ```
 
-## **Pathway analysis Filtered data**
+## **Pathway analysis complete and imputed data**
+
 Just like we made a pathway analysis for the unfiltered data, we are now going to make one for the complete and imputed data. We are going to start with the complete data.
 
 First of all, we have to transpose the names of the genes to the standard ID.
 
+### **Complete data (EV)**
+
+We are going to start with the EV from the complete data. 
+
 ```{r List of genes (complete data), echo=TRUE}
 
 # Get all genes
-all_genes_complete <- ev_complete_normalized_df$PG.Genes
+all_genes_complete_ev <- ev_complete_normalized_df$PG.Genes
 
 # Split genes which are in same row
-genes_vector_complete <- unlist(strsplit(all_genes_complete, split = ";"))
+genes_vector_complete_ev <- unlist(strsplit(all_genes_complete_ev, split = ";"))
 
 # Get the unique genes
-unique_genes_complete <- unique(genes_vector_complete)
+unique_genes_complete_ev <- unique(genes_vector_complete_ev)
 
 ```
 
-As I have mentioned before, we have mice and human data. We start with the human pathway. 
-```{r Translate gene to Entrez ID for humans (complete data), echo=TRUE}
+## **Human pathway**
 
-gene_symbols_complete <- unique_genes_complete
+As I have mentioned before, we have mice and human data. We start with the human pathway. 
+
+```{r Translate gene to Entrez ID for humans (complete data, EV), echo=TRUE}
+
+gene_symbols_complete_ev <- unique_genes_complete_ev
 
 # Translate to Entrez ID
-entrez_ids_humans_complete <- bitr(gene_symbols_complete, fromType = "SYMBOL",
+entrez_ids_humans_complete_ev <- bitr(gene_symbols_complete_ev, fromType = "ALIAS",
                    toType = "ENTREZID",
                    OrgDb = org.Hs.eg.db)
 
 # Look at the translation
-head(entrez_ids_humans_complete)
+head(entrez_ids_humans_complete_ev)
 
 ```
 
-```{r Vector with ENTREZ ID for humans (complete data), echo=TRUE}
+```{r Vector with ENTREZ ID for humans (complete data, ev), echo=TRUE}
 
 # Make vector
-entrez_ids_humans_complete <- entrez_ids_humans_complete$ENTREZID
+entrez_ids_humans_complete_ev <- entrez_ids_humans_complete_ev$ENTREZID
 
 # Make datatype numerical
-entrez_ids_humans_complete <- na.omit(as.numeric(entrez_ids_humans_complete))
+entrez_ids_humans_complete_ev <- na.omit(as.numeric(entrez_ids_humans_complete_ev))
 
 ```
 
-```{r KEGG Pathway analysis for humans  (complete data), echo=TRUE}
+```{r KEGG Pathway analysis for humans  (complete data, ev), echo=TRUE}
 
 # KEGG pathway analysis for humans
-kegg_results_humans_complete <- enrichKEGG(gene = entrez_ids_humans_complete,
+kegg_results_humans_complete_ev <- enrichKEGG(gene = entrez_ids_humans_complete_ev,
                            organism = "hsa",
                            pvalueCutoff = 0.05)
 
 # Results
-head(kegg_results_humans_complete)
+head(kegg_results_humans_complete_ev)
 
 # Visualisation
-barplot(kegg_results_humans_complete, showCategory=15)
-dotplot(kegg_results_humans_complete, showCategory=15)
+barplot(kegg_results_humans_complete_ev, showCategory=15)
+dotplot(kegg_results_humans_complete_ev, showCategory=15)
 
 ```
+
+### **Mice pathway**
 
 And now for the mice.
 
 ```{r Translate gene to Entrez ID for mice (complete data), echo=TRUE}
 
-gene_symbols_complete <- unique_genes_complete
+gene_symbols_complete_ev <- unique_genes_complete_ev
 
 # Translate to Entrez ID
-entrez_ids_mice_complete <- bitr(gene_symbols_complete, fromType = "SYMBOL",
+entrez_ids_mice_complete_ev <- bitr(gene_symbols_complete_ev, fromType = "ALIAS",
                    toType = "ENTREZID",
                    OrgDb = org.Mm.eg.db)
 
 # Look at the translation
-head(entrez_ids_mice_complete)
+head(entrez_ids_mice_complete_ev)
 
 ```
 
 ```{r Vector with ENTREZ ID for mice (complete data), echo=TRUE}
 
 # Make vector
-entrez_ids_mice_complete <- entrez_ids_mice_complete$ENTREZID
+entrez_ids_mice_complete_ev <- entrez_ids_mice_complete_ev$ENTREZID
 
 # Make datatype numerical
-entrez_ids_mice_complete <- na.omit(as.numeric(entrez_ids_mice_complete))
+entrez_ids_mice_complete_ev <- na.omit(as.numeric(entrez_ids_mice_complete_ev))
 
 ```
 
 ```{r KEGG Pathway analysis for mice  (complete data), echo=TRUE}
 
 # KEGG pathway analysis for mice
-kegg_results_mice_complete <- enrichKEGG(gene = entrez_ids_mice_complete,
+kegg_results_mice_complete_ev <- enrichKEGG(gene = entrez_ids_mice_complete_ev,
                            organism = "mmu",
                            pvalueCutoff = 0.05)
 
 # Results
-head(kegg_results_mice_complete)
+head(kegg_results_mice_complete_ev)
 
 # Visualisation
-barplot(kegg_results_mice_complete, showCategory=15)
-dotplot(kegg_results_mice_complete, showCategory=15)
+barplot(kegg_results_mice_complete_ev, showCategory=15)
+dotplot(kegg_results_mice_complete_ev, showCategory=15)
 
 ```
 
-Let's do the pathway analysis for the imputed data.
+### **Complete data (SF)**
+
+Now we are going to do the SF from the complete data. 
+
+```{r List of genes (complete data), echo=TRUE}
+
+# Get all genes
+all_genes_complete_sf <- sf_complete_normalized_df$PG.Genes
+
+# Split genes which are in same row
+genes_vector_complete_sf <- unlist(strsplit(all_genes_complete_sf, split = ";"))
+
+# Get the unique genes
+unique_genes_complete_sf <- unique(genes_vector_complete_sf)
+
+```
+
+## **Human pathway**
+
+As I have mentioned before, we have mice and human data. We start with the human pathway. 
+
+```{r Translate gene to Entrez ID for humans (complete data, SF), echo=TRUE}
+
+gene_symbols_complete_sf <- unique_genes_complete_sf
+
+# Translate to Entrez ID
+entrez_ids_humans_complete_sf <- bitr(gene_symbols_complete_sf, fromType = "ALIAS",
+                   toType = "ENTREZID",
+                   OrgDb = org.Hs.eg.db)
+
+# Look at the translation
+head(entrez_ids_humans_complete_sf)
+
+```
+
+```{r Vector with ENTREZ ID for humans (complete data, sf), echo=TRUE}
+
+# Make vector
+entrez_ids_humans_complete_sf <- entrez_ids_humans_complete_sf$ENTREZID
+
+# Make datatype numerical
+entrez_ids_humans_complete_sf <- na.omit(as.numeric(entrez_ids_humans_complete_sf))
+
+```
+
+```{r KEGG Pathway analysis for humans  (complete data, sf), echo=TRUE}
+
+# KEGG pathway analysis for humans
+kegg_results_humans_complete_sf <- enrichKEGG(gene = entrez_ids_humans_complete_sf,
+                           organism = "hsa",
+                           pvalueCutoff = 0.05)
+
+# Results
+head(kegg_results_humans_complete_sf)
+
+# Visualisation
+barplot(kegg_results_humans_complete_sf, showCategory=15)
+dotplot(kegg_results_humans_complete_sf, showCategory=15)
+
+```
+
+### **Mice pathway**
+
+And now for the mice.
+
+```{r Translate gene to Entrez ID for mice (complete data), echo=TRUE}
+
+gene_symbols_complete_sf <- unique_genes_complete_sf
+
+# Translate to Entrez ID
+entrez_ids_mice_complete_sf <- bitr(gene_symbols_complete_sf, fromType = "ALIAS",
+                   toType = "ENTREZID",
+                   OrgDb = org.Mm.eg.db)
+
+# Look at the translation
+head(entrez_ids_mice_complete_sf)
+
+```
+
+```{r Vector with ENTREZ ID for mice (complete data), echo=TRUE}
+
+# Make vector
+entrez_ids_mice_complete_sf <- entrez_ids_mice_complete_sf$ENTREZID
+
+# Make datatype numerical
+entrez_ids_mice_complete_sf <- na.omit(as.numeric(entrez_ids_mice_complete_sf))
+
+```
+
+```{r KEGG Pathway analysis for mice  (complete data), echo=TRUE}
+
+# KEGG pathway analysis for mice
+kegg_results_mice_complete_sf <- enrichKEGG(gene = entrez_ids_mice_complete_sf,
+                           organism = "mmu",
+                           pvalueCutoff = 0.05)
+
+# Results
+head(kegg_results_mice_complete_sf)
+
+# Visualisation
+barplot(kegg_results_mice_complete_sf, showCategory=15)
+dotplot(kegg_results_mice_complete_sf, showCategory=15)
+
+```
+
+### **Imputed data (EV)**
+
+Let's do the pathway analysis for the EV imputed data.
+
+## **Human pathway**
+
+We are going to start with the human pathway.
 
 ```{r List of genes (imputed data), echo=TRUE}
 
 # Get all genes
-all_genes_imputed <- ev_normalized_df$PG.Genes
+all_genes_imputed_ev <- ev_normalized_df$PG.Genes
 
 # Split genes which are in same row
-genes_vector_imputed <- unlist(strsplit(all_genes_imputed, split = ";"))
+genes_vector_imputed_ev <- unlist(strsplit(all_genes_imputed_ev, split = ";"))
 
 # Get the unique genes
-unique_genes_imputed <- unique(genes_vector_imputed)
+unique_genes_imputed_ev <- unique(genes_vector_imputed_ev)
 
 ```
 
 ```{r Translate gene to Entrez ID for humans (imputed data), echo=TRUE}
 
-gene_symbols_imputed <- unique_genes_imputed
+gene_symbols_imputed_ev <- unique_genes_imputed_ev
 
 # Translate to Entrez ID
-entrez_ids_humans_imputed <- bitr(gene_symbols_imputed, fromType = "SYMBOL",
+entrez_ids_humans_imputed_ev <- bitr(gene_symbols_imputed_ev, fromType = "ALIAS",
                    toType = "ENTREZID",
                    OrgDb = org.Hs.eg.db)
 
 # Look at the translation
-head(entrez_ids_humans_imputed)
+head(entrez_ids_humans_imputed_ev)
 
 ```
 
 ```{r Vector with ENTREZ ID for humans (imputed data), echo=TRUE}
 
 # Make vector
-entrez_ids_humans_imputed <- entrez_ids_humans_imputed$ENTREZID
+entrez_ids_humans_imputed_ev <- entrez_ids_humans_imputed_ev$ENTREZID
 
 # Make datatype numerical
-entrez_ids_humans_imputed <- na.omit(as.numeric(entrez_ids_humans_imputed))
+entrez_ids_humans_imputed_ev <- na.omit(as.numeric(entrez_ids_humans_imputed_ev))
 
 ```
 
 ```{r KEGG Pathway analysis for humans  (imputed data), echo=TRUE}
 
 # KEGG pathway analysis for humans
-kegg_results_humans_imputed <- enrichKEGG(gene = entrez_ids_humans_imputed,
+kegg_results_humans_imputed_ev <- enrichKEGG(gene = entrez_ids_humans_imputed_ev,
                            organism = "hsa",
                            pvalueCutoff = 0.05)
 
 # Results
-head(kegg_results_humans_imputed)
+head(kegg_results_humans_imputed_ev)
 
 # Visualisation
-barplot(kegg_results_humans_imputed, showCategory=10)
-dotplot(kegg_results_humans_imputed, showCategory=10)
+barplot(kegg_results_humans_imputed_ev, showCategory=10)
+dotplot(kegg_results_humans_imputed_ev, showCategory=10)
 
 ```
+
+## **Mice pathway**
 
 And now for the mice.
 
 ```{r Translate gene to Entrez ID for mice (imputed data), echo=TRUE}
 
-gene_symbols_imputed <- unique_genes_imputed
+gene_symbols_imputed_ev <- unique_genes_imputed_ev
 
 # Translate to Entrez ID
-entrez_ids_mice_imputed <- bitr(gene_symbols_imputed, fromType = "SYMBOL",
+entrez_ids_mice_imputed_ev <- bitr(gene_symbols_imputed_ev, fromType = "ALIAS",
                    toType = "ENTREZID",
                    OrgDb = org.Mm.eg.db)
 
 # Look at the translation
-head(entrez_ids_mice_imputed)
+head(entrez_ids_mice_imputed_ev)
 
 ```
 
 ```{r Vector with ENTREZ ID for mice (imputed data), echo=TRUE}
 
 # Make vector
-entrez_ids_mice_imputed <- entrez_ids_mice_imputed$ENTREZID
+entrez_ids_mice_imputed_ev <- entrez_ids_mice_imputed_ev$ENTREZID
 
 # Make datatype numerical
-entrez_ids_mice_imputed <- na.omit(as.numeric(entrez_ids_mice_imputed))
+entrez_ids_mice_imputed_ev <- na.omit(as.numeric(entrez_ids_mice_imputed_ev))
 
 ```
 
-```{r KEGG Pathway analysis for mice  (imputed data), echo=TRUE}
+```{r KEGG Pathway analysis for mice (imputed data), echo=TRUE}
 
 # KEGG pathway analysis for mice
-kegg_results_mice_imputed <- enrichKEGG(gene = entrez_ids_mice_imputed,
+kegg_results_mice_imputed_ev <- enrichKEGG(gene = entrez_ids_mice_imputed_ev,
                            organism = "mmu",
                            pvalueCutoff = 0.05)
 
 # Results
-head(kegg_results_mice_imputed)
+head(kegg_results_mice_imputed_ev)
 
 # Visualisation
-barplot(kegg_results_mice_imputed, showCategory=10)
-dotplot(kegg_results_mice_imputed, showCategory=10)
+barplot(kegg_results_mice_imputed_ev, showCategory=10)
+dotplot(kegg_results_mice_imputed_ev, showCategory=10)
 
 ```
 
-We are now going to make a visualisation of the pathway. This code was written by my peer J. Jonker. 
+### **Imputed data (SF)**
 
-Visualisation pathway human complete data:
+We are now going to do the pathway analysis for the SF imputed data. 
 
-```{r Visualisation pathway COVID-19 complete data human, eval=TRUE}
+## **Human pathway**
+
+We are going to start with the human pathway.
+
+```{r List of genes (imputed data), echo=TRUE}
+
+# Get all genes
+all_genes_imputed_sf <- sf_normalized_df$PG.Genes
+
+# Split genes which are in same row
+genes_vector_imputed_sf <- unlist(strsplit(all_genes_imputed_sf, split = ";"))
+
+# Get the unique genes
+unique_genes_imputed_sf <- unique(genes_vector_imputed_sf)
+
+```
+
+```{r Translate gene to Entrez ID for humans (imputed data), echo=TRUE}
+
+gene_symbols_imputed_sf <- unique_genes_imputed_sf
+
+# Translate to Entrez ID
+entrez_ids_humans_imputed_sf <- bitr(gene_symbols_imputed_sf, fromType = "ALIAS",
+                   toType = "ENTREZID",
+                   OrgDb = org.Hs.eg.db)
+
+# Look at the translation
+head(entrez_ids_humans_imputed_sf)
+
+```
+
+```{r Vector with ENTREZ ID for humans (imputed data), echo=TRUE}
+
+# Make vector
+entrez_ids_humans_imputed_sf <- entrez_ids_humans_imputed_sf$ENTREZID
+
+# Make datatype numerical
+entrez_ids_humans_imputed_sf <- na.omit(as.numeric(entrez_ids_humans_imputed_sf))
+
+```
+
+```{r KEGG Pathway analysis for humans  (imputed data), echo=TRUE}
+
+# KEGG pathway analysis for humans
+kegg_results_humans_imputed_sf <- enrichKEGG(gene = entrez_ids_humans_imputed_sf,
+                           organism = "hsa",
+                           pvalueCutoff = 0.05)
+
+# Results
+head(kegg_results_humans_imputed_sf)
+
+# Visualisation
+barplot(kegg_results_humans_imputed_sf, showCategory=10)
+dotplot(kegg_results_humans_imputed_sf, showCategory=10)
+
+```
+
+## **Mice pathway**
+
+And now for the mice.
+
+```{r Translate gene to Entrez ID for mice (imputed data), echo=TRUE}
+
+gene_symbols_imputed_sf <- unique_genes_imputed_sf
+
+# Translate to Entrez ID
+entrez_ids_mice_imputed_sf <- bitr(gene_symbols_imputed_sf, fromType = "ALIAS",
+                   toType = "ENTREZID",
+                   OrgDb = org.Mm.eg.db)
+
+# Look at the translation
+head(entrez_ids_mice_imputed_sf)
+
+```
+
+```{r Vector with ENTREZ ID for mice (imputed data), echo=TRUE}
+
+# Make vector
+entrez_ids_mice_imputed_sf <- entrez_ids_mice_imputed_sf$ENTREZID
+
+# Make datatype numerical
+entrez_ids_mice_imputed_sf <- na.omit(as.numeric(entrez_ids_mice_imputed_sf))
+
+```
+
+```{r KEGG Pathway analysis for mice (imputed data), echo=TRUE}
+
+# KEGG pathway analysis for mice
+kegg_results_mice_imputed_sf <- enrichKEGG(gene = entrez_ids_mice_imputed_sf,
+                           organism = "mmu",
+                           pvalueCutoff = 0.05)
+
+# Results
+head(kegg_results_mice_imputed_sf)
+
+# Visualisation
+barplot(kegg_results_mice_imputed_sf, showCategory=20)
+dotplot(kegg_results_mice_imputed_sf, showCategory=20)
+
+```
+
+## Pathway visualisation
+
+We are now going to make a visualisation of the pathway. Since COVID-19 recurred in most of the samples, we decided to focus on this disease. 
+
+**This code was written by my peer J. Jonker.**
+
+Visualisation pathway human imputed data (EV):
+
+```{r}
+# Stel je hebt deze dataframe met expressiegegevens
+expr_df <- ev_normalized_df  # bijvoorbeeld
+
+# Neem alleen genen die vertaald zijn naar Entrez
+expr_df <- expr_df[expr_df$PG.Genes %in% gene_symbols_imputed_ev, ]
+
+# Maak een vector met expressie, waarbij de namen Entrez-ID's zijn
+gene_to_entrez <- bitr(expr_df$PG.Genes, fromType = "ALIAS", toType = "ENTREZID", OrgDb = org.Hs.eg.db)
+
+# Merge expressie met Entrez-ID’s
+merged_df <- merge(expr_df, gene_to_entrez, by.x = "PG.Genes", by.y = "ALIAS")
+
+# Stel dat kolom `logFC` je expressie is:
+gene_vector <- merged_df$logFC
+names(gene_vector) <- merged_df$ENTREZID
+
+
+```
+
+```{r Visualisation pathway COVID-19 imputed data human (EV), eval=TRUE}
 library(pathview)
 
 setwd("visualisation_pathway_proteomics/imputed_data/human")
 
 pathview(
-  gene.data = kegg_results_humans_imputed,
+  gene.data = entrez_ids_humans_imputed_ev,
   pathway.id = "hsa05171",
   species = "hsa",
-  out.suffix = "Coronavirus_disease_COVID-19"
-)
-
-# Chemokine signaling pathway
-pathview(
-  gene.data = kegg_results_humans_imputed,
-  pathway.id = "hsa05171",
-  species = "hsa",
-  out.suffix = "Chemokine"
+  out.suffix = "Coronavirus_disease_COVID-19",
+  low=list(gene="magenta"),
+  high=list(gene="green")
 )
 
 ```
 
-Visualisation pathway mice complete data:
-```{r Visualisation pathway COVID-19 complete data mice, eval=TRUE}
+```{r}
 
-setwd("visualisation_pathway_proteomics/complete_data/mice")
+library(pathview)
+library(gage)
+library(gageData)
 
-pathview(
-  gene.data = kegg_results_mice_complete,
-  pathway.id = "mmu05171",
-  species = "mmu",
-  out.suffix = "Coronavirus_disease_COVID-19"
-)
-
-# Chemokine signaling pathway
-pathview(
-  gene.data = kegg_results_mice_complete,
-  pathway.id = "mmu05171",
-  species = "mmu",
-  out.suffix = "Chemokine"
-)
 
 ```
 
-Visualisation pathway mice imputed data:
-```{r Visualisation pathway COVID-19 imputed data mice, eval=TRUE}
-
-setwd("visualisation_pathway_proteomics/imputed_data/mice")
-
-pathview(
-  gene.data = kegg_results_mice_imputed,
-  pathway.id = "mmu05171",
-  species = "mmu",
-  out.suffix = "Coronavirus_disease_COVID-19"
-)
-
-# Chemokine signaling pathway
-pathview(
-  gene.data = kegg_results_mice_imputed,
-  pathway.id = "mmu05171",
-  species = "mmu",
-  out.suffix = "Chemokine"
-)
+```{r}
+#foldchanges = res
 
 ```
+```{r}
+
+
+```
+```{r}
+
+
+```
+```{r}
+
+
+```
+```{r}
+
+
+```
+```{r}
+
+
+```
+```{r}
+
+
+```
+```{r}
+
+
+```
+```{r}
+
+
+```
+```{r}
+
+
+```
+```{r}
+
+
+```
+### Pathway images COVID-19
+
+The following image depicts the pathway of COVID-19 in mice which comes from the complete dataset.
+
+#![Pathway mice complete #data]#(imgs_trans/extracellular_vs_soluble/mmu00562.metabolism.png)
