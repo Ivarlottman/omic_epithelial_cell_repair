@@ -11,7 +11,7 @@
 
 <meta name="author" content="Mirte Draaijer" />
 
-<meta name="date" content="2025-05-26" />
+<meta name="date" content="2025-05-28" />
 
 <title>Logboek Mirte</title>
 
@@ -1504,7 +1504,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">Logboek Mirte</h1>
 <h4 class="author">Mirte Draaijer</h4>
-<h4 class="date">2025-05-26</h4>
+<h4 class="date">2025-05-28</h4>
 
 </div>
 
@@ -1689,7 +1689,7 @@ assignment.</p>
 </div>
 <div id="guest-lecture" class="section level2">
 <h2>Guest lecture:</h2>
-<p><strong>8-2-2025:</strong></p>
+<p><strong>8-5-2025:</strong></p>
 <p>Today we had a guest lecture from Karin Wolters.</p>
 <p>She is one of the researchers that worked on the project we chose. So
 we had the opportunity to ask her some questions.</p>
@@ -1827,7 +1827,7 @@ expression by use of negative binomial generalized linear models.</p>
 </div>
 <div id="implementing" class="section level3">
 <h3>Implementing:</h3>
-<p><strong>12-5-2025:</strong></p>
+<p><strong>12-5-2025 &amp; 24-4-2025::</strong></p>
 <p>Karin still needs to get back to us on which sample is which, for now
 I will implement DESeq to use all samples, but I can change this later
 on if we’re not going to use all samples. If I have working code
@@ -1895,6 +1895,7 @@ Epcam and CCL indicate which cell type was used.</li>
 is a count representing how many reads of the gene were found in the
 sample.</li>
 </ul>
+<p><strong>12-5-2025:</strong></p>
 </div>
 <div id="step-2-constructing-deseq-dataset" class="section level4">
 <h4>Step 2 constructing DESeq dataset:</h4>
@@ -2460,9 +2461,9 @@ top_genes &lt;- lapply(1:7, function(comp) {
 # Combine the top 10 genes per component into a dataframe:
 top_genes_df &lt;- do.call(rbind, top_genes)
 rownames(top_genes_df) &lt;- NULL</code></pre>
-<p>Now I have a dataframe containing the top 3 genes that contributed
-the most to each component. I will take a look at the top 3 of each
-component.</p>
+<p>Now I have a dataframe containing the top 10 genes that contributed
+the most to each component. I will take a closer look at the top 3 of
+each component.</p>
 <pre class="r"><code>top_genes_df</code></pre>
 <pre><code>##         Gene   Loading Component
 ## 1       Calu -5.552152         1
@@ -2708,6 +2709,14 @@ protein C (SPC), an extremely hydrophobic surfactant protein essential
 for lung funtion and homeostasis, pulmonary-associated surfactant
 protein C is present i n the lungs. So this is something we can connect
 to the original article as well.</p>
+<p><strong>27-5-2025:</strong></p>
+<p>Yesterday I found two very interesting genes: Slpi and Sftpc, these
+genes play a role in processes that I can link to the original article.
+I looked at my teammates their log files, sadly enough I did not find
+these genes in their analyses of the pathways. However these genes are
+still interesting since we can link them to the original article, it
+could just be that their not in one of the top 10 pathways from their
+analyses.</p>
 </div>
 </div>
 <div id="writing-article" class="section level1">
@@ -2718,6 +2727,9 @@ to the original article as well.</p>
 <p>Today I discussed with my group and I suggested that I can start
 writing the introduction. So I wrote a first draft of the
 introduction.</p>
+<p><strong>26-5-2025:</strong></p>
+<p>I got some feedback from my group on the introduction so I
+implemented the feedback.</p>
 </div>
 <div id="materials-and-methods" class="section level2">
 <h2>Materials and methods:</h2>
@@ -2737,128 +2749,18 @@ transcriptomics PCA plot and wrote some accompanying text.</p>
 </div>
 <div id="discussion" class="section level2">
 <h2>Discussion:</h2>
+<p><strong>28-5-2025:</strong></p>
+<p>Today I worked on writing the discussion part of the article together
+with my group. Today is the deadline for the first draft so were hoping
+to have written down everything we want in this first draft.</p>
 </div>
 <div id="conclusion" class="section level2">
 <h2>Conclusion:</h2>
-<p><strong>EVEN KIJKEN HOE IK DIT DEEL IN MIJN LOGBOEK WIL
-DOEN!!!</strong></p>
+<p><strong>28-5-2025:</strong></p>
+<p>Today I worked on writing the conclusion part of the article together
+with my group. Today is the deadline for the first draft so were hoping
+to have written down everything we want in this first draft.</p>
 </div>
-</div>
-<div id="exploratory-data-analysis" class="section level1">
-<h1>Exploratory data analysis:</h1>
-<div id="data-loading-and-first-look" class="section level2">
-<h2>Data loading and first look:</h2>
-<p><strong>24-4-2025:</strong></p>
-<p>The first step in the exploratory data analysis is loading the
-data.</p>
-<pre class="r"><code>proteomics_data &lt;- read_excel(
-  &quot;omic_epithelial_cell_repair/data/2021-36_2021-42_SN16withHELAlib_MS2Quant_Qclassic_LocalNorm_NoImp.xlsx&quot;)
-
-rna_seq_data &lt;- read.csv(
-  &quot;omic_epithelial_cell_repair/data/GSE271272_rawcounts.csv&quot;)</code></pre>
-<p>Now I will take a look at the first few lines of both files, starting
-with the proteomics data.</p>
-<pre class="r"><code>head(proteomics_data)</code></pre>
-<pre><code>## # A tibble: 6 × 12
-##   PG.ProteinGroups  PG.Genes      `2021-36_EV1`    `2021-36_SF1`   `2021-36_SF2`
-##   &lt;chr&gt;             &lt;chr&gt;         &lt;chr&gt;            &lt;chr&gt;           &lt;chr&gt;        
-## 1 &lt;NA&gt;              COUNT         1906             1975            1676         
-## 2 A0A0B4J2D5;P0DPI2 GATD3B;GATD3A Filtered         362.8529663085… Filtered     
-## 3 A0AVT1            UBA6          2634.720703125   2805.660888671… 2079.8071289…
-## 4 A1L4H1            SSC5D         317746.125       10269.7578125   11300.503906…
-## 5 A4D0V7            CPED1         Filtered         1885.836303710… 3033.9199218…
-## 6 A5YKK6            CNOT1         11153.7802734375 12914.220703125 9238.0917968…
-## # ℹ 7 more variables: `2021-36_SF3` &lt;chr&gt;, `2021-42_EV1` &lt;chr&gt;,
-## #   `2021-42_EV2` &lt;chr&gt;, `2021-42_EV3` &lt;chr&gt;, `2021-42_EV4` &lt;chr&gt;,
-## #   `2021-42_SF1` &lt;chr&gt;, `2021-42_SF2` &lt;chr&gt;</code></pre>
-<p>When taking a look at the first few lines of the proteomics data I’m
-seeing the following things:</p>
-<ul>
-<li>The first column is called <code>PG.ProteinGroups</code>this column
-contains one or more protein groups.</li>
-<li>The second column is called <code>PG.Genes</code> the first row of
-this column contains the word <code>COUNT</code>, when looking at the
-other number it shows a number. I’m assuming that this is a count, I’m
-not yet sure what this count means. After the first row this column
-contains one or more genes.</li>
-<li>The next columns have a name consisting of what seems to be a year,
-either the number 36 or 42, SF or EV followed by the number 1, 2, or 3.
-When taking a look at the article I found that SF stand for soluble
-factors and EV stands for extracellular vesicles. I’m not sure what the
-numbers 36 and 42 mean, I can’t find anything about this. I think the
-numbers 1, 2, and 3 stand for duplicates.</li>
-</ul>
-<p>Now I will take a look at the first few lines of the RNA sequencing
-data file.</p>
-<pre class="r"><code>head(rna_seq_data)</code></pre>
-<pre><code>##          Sample M1_ctrl_Epcam M2_ctrl_Epcam M3_ctrl_Epcam M4_ctrl_Epcam
-## 1 0610009B22Rik           266            41            79            46
-## 2 0610010K14Rik            21             3             3             1
-## 3 0610012G03Rik           276            41            93            74
-## 4 0610030E20Rik           416            88           132            84
-## 5 0610038B21Rik            16             1             4             9
-## 6 0610040J01Rik           765           144           236           120
-##   M1_EVs_Epcam M2_EVs_Epcam M3_EVs_Epcam M4_EVs_Epcam M1_SFs_Epcam M2_SFs_Epcam
-## 1          100           59          171          277          198           14
-## 2            7            2           17           24           19            2
-## 3           96          113          273          304          254           30
-## 4          163          106          372          494          443           36
-## 5            3            1            6            6           12            1
-## 6          221          170          584          661          692           75
-##   M3_SFs_Epcam M4_SFs_Epcam M1_OGN_Epcam M2_OGN_Epcam M3_OGN_Epcam M4_OGN_Epcam
-## 1           84           73           66           78          231           40
-## 2            3            5            6            5           14            2
-## 3           89          118          118           94          246           59
-## 4          188          178          161          129          377           84
-## 5            4            7            2            4            8            1
-## 6          222          186          250          230          676          192
-##   M1_ctrl_CCL M2_ctrl_CCL M3_ctrl_CCL M4_ctrl_CCL M1_EVs_CCL M2_EVs_CCL
-## 1          99          55         136         111         39         78
-## 2          11           8          16          12          5          2
-## 3          99          97         178         135         64         89
-## 4         372         224         364         401         65         91
-## 5          14           9           9          16          2          1
-## 6          33          19          34          24          8         11
-##   M3_EVs_CCL M4_EVs_CCL M1_SFs_CCL M2_SFs_CCL M3_SFs_CCL M4_SFs_CCL M1_OGN_CCL
-## 1         94         84         72         57         67         78         48
-## 2          5          2          6          3          4          7          6
-## 3        125        129        114         87        107        111         75
-## 4        287         99        149        146        213        233        134
-## 5          3          8         13          3         11          7          8
-## 6         18         18         23         10         17         12         37
-##   M2_OGN_CCL M3_OGN_CCL M4_OGN_CCL
-## 1        135        163         65
-## 2         22         16          5
-## 3        165        268        114
-## 4        371        583        301
-## 5         15         21          4
-## 6         36        129         24</code></pre>
-<p>When taking a look at the first few lines of the RNA sequencing data
-I’m seeing the following things:</p>
-<ul>
-<li>The first column is called <code>Sample</code>, I looked up the
-first few lines of this row and discovered that these are genes.</li>
-<li>The following columns are named in the following way: starting with
-M1, M2, or M3. Followed by ctrl, EVs, SFs, or OGN. Followed by Epcam or
-CCL. When taking a look at the article I found that SF stand for soluble
-factors, EV stands for extracellular vesicles, OGN stands for
-osteoglycin. I think M1, M2, and M3 indicate the duplicates. I think
-Epcam and CCL indicate which cell type was used.</li>
-<li>Each column except the first contains a number, I think this number
-is a count representing how many reads of the gene were found in the
-sample.</li>
-</ul>
-<p>Now that I’ve looked at the first few lines it’s important to compare
-the two files because we want to do analysis with both the files.</p>
-<p>When looking at both the files it is hard to see which line in the
-proteomics data belongs to which line in the RNA sequencing data,
-because the samples do not have the same name. Another problem is the
-fact that the RNA sequencing data seems to have more samples. This is a
-problem, I think we need to discuss with our teachers.</p>
-</div>
-</div>
-<div id="comfirmatory-data-analysis" class="section level1">
-<h1>Comfirmatory data analysis</h1>
 </div>
 <div id="resources" class="section level1 unnumbered">
 <h1 class="unnumbered">Resources:</h1>
