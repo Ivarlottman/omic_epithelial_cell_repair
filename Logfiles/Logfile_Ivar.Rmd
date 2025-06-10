@@ -391,10 +391,22 @@ ggplot(pca_loadings, aes(x = PC1, y= PC3)) +
         plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
+pca 1,2,3
+
 ```{r}
 pca_pc2 <- plotPCA(vsd, intgroup="group", ntop = 841, pcsToUse = c(1,2), returnData = TRUE)
 pca_loadings$PC2 <- pca_pc2$PC2
-pca_loadings
+#pca_loadings
+ggplot(pca_loadings, aes(x = PC1, y= PC3)) + 
+  geom_point(aes(colour = PC2, shape = group),size=3) +
+  scale_color_gradient(low = "blue", high = "red")+
+  ggtitle("PCA of Proteomics data") +
+  #paletteer::scale_colour_paletteer_d("ggprism::colorblind_safe") +
+  theme_classic() +
+  theme(panel.grid.major = element_line(colour = "lightgrey"),
+        legend.box.background = element_rect(color="grey", size=0.5),
+        legend.box.margin = margin(1, 1, 1, 1),
+        plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
 
