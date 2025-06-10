@@ -139,7 +139,7 @@ head(imputed_prot)
 meta data
 ```{r}
 meta_data <- data_frame(sample = c("X36_EV1","X42_EV1","X42_EV2","X42_EV3","X42_EV4","X36_SF1","X36_SF2","X36_SF3","X42_SF1","X42_SF2"),
-                        group = c("EV","EV","EV","EV","EV","SF","SF","SF","SF","SF")
+                        group = c("Extracellular vesicles ","Extracellular vesicles ","Extracellular vesicles ","Extracellular vesicles ","Extracellular vesicles ","Soluble factors ","Soluble factors ","Soluble factors ","Soluble factors ","Soluble factors ")
                         )
 meta_data
 ```
@@ -204,6 +204,7 @@ plotPCA(vsd, intgroup="group", ntop = 841, pcsToUse = c(1,2), returnData = FALSE
 ```
 
 
+
 ```{r}
 plotPCA(vsd, intgroup="group", ntop = 841, pcsToUse = c(1,3), returnData = FALSE)+
   ggtitle("PCA of Proteomics data") +
@@ -212,6 +213,7 @@ plotPCA(vsd, intgroup="group", ntop = 841, pcsToUse = c(1,3), returnData = FALSE
   theme(panel.grid.major = element_line(colour = "lightgrey"),
         legend.box.background = element_rect(color="grey", size=0.5),
         legend.box.margin = margin(1, 1, 1, 1),
+        scale_fill_discrete(labels = c("Extracellular vesicles","Soluble factors ")),
         plot.title = element_text(hjust = 0.5, face = "bold"))
 
 ```
@@ -347,4 +349,56 @@ Lack of data:
 Their was an overal lack of data that made us unable to make decisives results and in specific the proteomics data set had allot of missing values wich coused us to throw out allot of the data that was gatherd. because of all of the missing values we chose to impute the data where it was possible but becouse of a lack of supporting data this was limmeting and makes the imputation less relaible.
 
 Covid contamination?
+
+Notes 4-6-2025
+uitleg ev sf eigen alinia
+plsda componenten uit hoogdimensionale data
+
+verbeteringen text
+
+Multi-omics compatibility 
+
+using
+When exploring this data we found out that the datasets where from different sample types. The transcriptomics data was taken from mouse-based genes and the proteomics derived human/mouse-based genes. Aswel as the fact that transcriptomics was performed after proteomics, this results in an inability to see the effects of the EV and SF treatments on the same samples in the transcriptomics and proteomics data simultaneously. For these reasons we concluded that the data was not multi-omics compatible, becouse it doesnt have any samples we can statisticlly corralate to one another.
+suggested
+The data used for this research is not multi-omics compatible. During the data analysis, we discovered that the data have no relation, making us unable to statistically correlate with one another. This is because the data is taken from different sample types the transcriptomics data were taken from  mouse-based genes and the proteomics data were derived from human/mouse based genes. Furthermore the transcriptomics was preformed after the proteomics, this results in an inability to see the effects of the EV and SF treatments on the same samples in the transcriptomics and proteomics data.
+
+
+PCA
+The proteomics PCA (figure 2) shows that the EV and SF groups are very distinct groups where the first principal component is the main divider containing 67% of the variance. The 3rd component however shows a bit more similarity in variety among the samples. Groups containing only EVs are a bit more spread. In the second principal component there is more spread in the EV group and less in the SF group. 
+When looking at the top 5 genes in of the first three principal components there were 2 that could be interesting for future research: ACTN4 and FBLN2 (table 3). Both of these genes have structural implications that could be interesting for the field of regenerative medicine. ACTN4 is a gene that belongs to the alpha actinins gene family that can have multiple functions depending on the cell type (PubChem, n.d.). FBLN2 is a gene that is involved in the development of the extracellular matrix that is present in the reparation of damaged cells (FBLN2 Fibulin 2 [Homo Sapiens (Human)] - Gene - NCBI, n.d.). Finding FBLN2 in the samples is to be expected as it is a part of creating the extracellular matrix that is involved in wound repair. (https://pmc.ncbi.nlm.nih.gov/articles/PMC8002899/) What is noteworthy is that acording to the loadings its one of the key factors that separate EV and SF, meaning that EV's carry signifcantly more of this protein then SF's. this is something that could be taken into consideration when designing treatments around this gene. 
+
+
+In deze Alinea de genen voor het eerst benoemen. Waarom is het logisch/niet logisch dat dit er uit komt? 
+
+
+Meer waarom toevoegen. 
+
+
+```{r}
+pca_loadings <- plotPCA(vsd, intgroup="group", ntop = 841, pcsToUse = c(1,3), returnData = TRUE)
+
+pca_loadings$group <- as.factor(c("Extracellular vesicles ","Extracellular vesicles ","Extracellular vesicles ","Extracellular vesicles ","Extracellular vesicles ","Soluble factors ","Soluble factors ","Soluble factors ","Soluble factors ","Soluble factors "))
+
+ggplot(pca_loadings, aes(x = PC1, y= PC3)) + 
+  geom_point(aes(colour = group), size=4)+
+  ggtitle("PCA of Proteomics data") +
+  paletteer::scale_colour_paletteer_d("ggprism::colorblind_safe") +
+  theme_classic() +
+  theme(panel.grid.major = element_line(colour = "lightgrey"),
+        legend.box.background = element_rect(color="grey", size=0.5),
+        legend.box.margin = margin(1, 1, 1, 1),
+        plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+```{r}
+pca_pc2 <- plotPCA(vsd, intgroup="group", ntop = 841, pcsToUse = c(1,2), returnData = TRUE)
+pca_loadings$PC2 <- pca_pc2$PC2
+pca_loadings
+```
+
+
+
+
+
 
